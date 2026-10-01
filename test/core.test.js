@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { renderSvg, detectLanguage, clipLines } from "../src/core.js";
+import { renderSvg, detectLanguage, clipLines, parseLineRanges } from "../src/core.js";
 
 // Each code line as [x, glyph] pairs.
 const codeLines = (svg) =>
@@ -52,6 +52,17 @@ test("line numbers are right-aligned in a gutter before the code", async () => {
   const col = (x) => +((x - lines[9][0][0]) / 14.4).toFixed(3);
   assert.deepEqual(lines[0].map(([x, g]) => [col(x), g]), [[1, "1"], [4, "x"], [5, "0"]]);
   assert.deepEqual(lines[9].map(([x, g]) => [col(x), g]), [[0, "1"], [1, "0"], [4, "x"], [5, "9"]]);
+});
+
+test("parses line ranges and highlights only lines that exist", async () => {
+  assert.deepEqual(parseLineRanges("3, 5-7,1"), [3, 5, 6, 7, 1]);
+  for (const bad of ["", "0", "4-2", "a", "1,,2", "1-", "1-2000000"]) {
+    assert.throws(() => parseLineRanges(bad), /Invalid line range/, bad);
+  }
+  const svg = await renderSvg("a\nb\nc", { fileName: "a.txt", highlight: [2, 9] });
+  const rows = [...svg.matchAll(/<rect [^>]*fill="#44475A"/g)];
+  assert.equal(rows.length, 1);
+  assert.match(rows[0][0], /y="168"/); // codeY 134 + one 34 px row
 });
 
 test("uses no SVG filter", async () => {

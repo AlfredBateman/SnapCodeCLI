@@ -37,6 +37,7 @@ export const THEME_PRESETS = {
     windowBg: "#1E1F29",
     titleText: "#C9D1D9",
     lineNumber: "#6272A4",
+    highlight: "#44475A",
   },
   light: {
     shikiTheme: "github-light",
@@ -45,6 +46,7 @@ export const THEME_PRESETS = {
     windowBg: "#FFFFFF",
     titleText: "#57606A",
     lineNumber: "#8C959F",
+    highlight: "#FFF8C5",
   },
 };
 
@@ -79,10 +81,23 @@ export function clipLines(code, maxLines) {
   return { code: clipped ? lines.slice(0, maxLines).join("\n") + "\n" : code, lines: lines.length, clipped };
 }
 
+// "3,5-8" -> [3, 5, 6, 7, 8]. Throws on anything else.
+export function parseLineRanges(spec) {
+  const out = [];
+  for (const part of spec.split(",")) {
+    const m = /^\s*(\d+)\s*(?:-\s*(\d+)\s*)?$/.exec(part);
+    const from = Number(m?.[1]);
+    const to = Number(m?.[2] ?? m?.[1]);
+    if (!m || from < 1 || to < from || to > 1_000_000) throw new Error(`Invalid line range "${part.trim()}"`);
+    for (let n = from; n <= to; n++) out.push(n);
+  }
+  return out;
+}
+
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
 export async function renderSvg(
   code,
-  { fileName = "", theme = "dark", footer = null, tabWidth = 4, lineNumbers = false } = {},
+  { fileName = "", theme = "dark", footer = null, tabWidth = 4, lineNumbers = false, highlight = [] } = {},
 ) {
   code = code.replace(/\r?\n$/, "");
   const themeKey = theme;
@@ -149,6 +164,15 @@ export async function renderSvg(
   const imageWidth = cardWidth + outerPadding * 2;
   const imageHeight = cardHeight + outerPadding * 2;
 
+  const highlighted = new Set(highlight);
+  const highlightSvg = lines
+    .map((_, row) =>
+      highlighted.has(row + 1)
+        ? `<rect x="${cardX}" y="${codeY + row * lineHeight}" width="${cardWidth}" height="${lineHeight}" fill="${preset.highlight}" />`
+        : "",
+    )
+    .join("");
+
   const footerSvg = footerText
     ? `<text x="${cardX + innerPadding}" y="${cardY + cardHeight - 10}" fill="${
         themeKey === "dark" ? "#FFFFFF" : "#24292F"
@@ -170,6 +194,7 @@ export async function renderSvg(
     .map((i) => `<rect x="${cardX - i}" y="${cardY + i}" width="${cardWidth + i * 2}" height="${cardHeight + i * 2}" rx="${10 + i}" fill="#000000" opacity="0.025" />`)
     .join("")}
   <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="10" ry="10" fill="${preset.windowBg}" />
+  ${highlightSvg}
   <circle cx="${cardX + 20}" cy="${cardY + 22}" r="6" fill="#FF5F56"/>
   <circle cx="${cardX + 40}" cy="${cardY + 22}" r="6" fill="#FFBD2E"/>
   <circle cx="${cardX + 60}" cy="${cardY + 22}" r="6" fill="#27C93F"/>

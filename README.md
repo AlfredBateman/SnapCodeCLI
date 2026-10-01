@@ -47,6 +47,7 @@ On success it prints `Saved PNG: <absolute path>`.
 | `--tab-width <n>` | `4` | Columns per tab stop, 1 to 16 |
 | `--max-lines <n>` | `100` | Render only the first `n` lines and warn on stderr; `0` renders everything |
 | `--line-numbers` | off | Show right-aligned line numbers in a gutter |
+| `--highlight <lines>` | none | Highlight lines, e.g. `3,5-8`. Lines past the end are ignored |
 | `-V, --version` | | Print the version |
 | `-h, --help` | | Show help |
 

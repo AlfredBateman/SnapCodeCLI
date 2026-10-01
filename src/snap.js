@@ -5,7 +5,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { Command, InvalidArgumentError, Option } from "commander";
 import sharp from "sharp";
-import { clipLines, renderSvg, THEME_PRESETS } from "./core.js";
+import { clipLines, parseLineRanges, renderSvg, THEME_PRESETS } from "./core.js";
 
 const program = new Command();
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
@@ -105,6 +105,13 @@ async function run() {
     .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
     .option("--max-lines <n>", "Render at most this many lines, 0 for all", integer(0, 1_000_000), 100)
     .option("--line-numbers", "Show line numbers")
+    .option("--highlight <lines>", "Highlight lines, e.g. 3,5-8", (value) => {
+      try {
+        return parseLineRanges(value);
+      } catch (error) {
+        throw new InvalidArgumentError(`${error.message}. Use numbers and ranges like 3,5-8.`);
+      }
+    })
     .parse(process.argv);
 
   const filePath = program.args[0];
@@ -137,6 +144,7 @@ async function run() {
     footer: options.footer ? getGitBlameFooter(filePath) : null,
     tabWidth: options.tabWidth,
     lineNumbers: Boolean(options.lineNumbers),
+    highlight: options.highlight,
   });
 
   const outputPath = path.resolve(process.cwd(), options.output);
