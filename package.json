@@ -1,6 +1,6 @@
 {
   "name": "snapcode-cli",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "Generate beautiful syntax-highlighted code snapshots as PNG or JPG from the terminal.",
   "type": "module",
   "exports": "./src/core.js",
