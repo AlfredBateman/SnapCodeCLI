@@ -8,6 +8,7 @@ import sharp from "sharp";
 import { renderSvg, THEME_PRESETS } from "./core.js";
 
 const program = new Command();
+const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 
 function getGitBlameFooter(filePath) {
   const absPath = path.resolve(filePath);
@@ -84,6 +85,7 @@ function copyImageToClipboard(file) {
 async function run() {
   program
     .name("snapcode")
+    .version(pkg.version)
     .description("Generate syntax-highlighted PNG snapshots from source code files.")
     .argument("<filepath>", "Path to the source code file")
     .option("-t, --theme <theme>", "Theme variant: dark or light", "dark")
