@@ -18,7 +18,7 @@ test("keeps whitespace and drops the trailing newline", async () => {
 });
 
 test("aligns columns across tabs, CJK, fullwidth and emoji", async () => {
-  const code = ["0123456789|", "\ttab\t    |", "  中文字  |", "ＡＢＣＤ  |", "😀 emoji  |", "👍🏽 skin   |", "👨‍👩‍👧 zwj    |", 'x = "é";  |'];
+  const code = ["0123456789|", "\ttab\t  |", "  中文字  |", "ＡＢＣＤ  |", "😀 emoji  |", "👍🏽 skin   |", "👨‍👩‍👧 zwj    |", 'x = "é";  |'];
   const svg = await renderSvg(code.join("\n"), { fileName: "a.txt" });
   const bars = codeLines(svg).map((line) => line.find(([, g]) => g === "|")[0]);
   assert.equal(new Set(bars).size, 1, `bars at ${bars}`);
@@ -26,6 +26,16 @@ test("aligns columns across tabs, CJK, fullwidth and emoji", async () => {
   // Canvas fits the widest line in display columns, not UTF-16 units: 100 CJK = 200 cells.
   const wide = await renderSvg("中".repeat(100), { fileName: "a.txt" });
   assert.equal(Number(wide.match(/<svg width="(\d+)"/)[1]), Math.ceil(200 * 14.4) + 180);
+});
+
+test("tabs advance to the next tab stop, 4 columns by default", async () => {
+  const tabCol = async (opts) => {
+    const [line] = codeLines(await renderSvg("a\tb\n", { fileName: "a.txt", ...opts }));
+    return +((line[1][0] - line[0][0]) / 14.4).toFixed(3);
+  };
+  assert.equal(await tabCol({}), 4);
+  assert.equal(await tabCol({ tabWidth: 2 }), 2);
+  assert.equal(await tabCol({ tabWidth: 8 }), 8);
 });
 
 test("uses no SVG filter", async () => {

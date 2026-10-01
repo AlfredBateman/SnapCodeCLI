@@ -20,6 +20,7 @@ snapcode [options] <filepath>
 | `-o, --output <file>` | `snapshot.png` | Must end in `.png` (case-insensitive). Resolved against the current directory. Missing parent folders are created. An existing file is overwritten. |
 | `--clipboard <mode>` | `none` | `image` or `none` (commander `choices`) |
 | `--footer` | off | none |
+| `--tab-width <n>` | `4` | Integer from 1 to 16 |
 | `-V, --version` | | prints `version` from `package.json` |
 | `-h, --help` | | built in |
 
@@ -58,7 +59,7 @@ Checked in order, all lower-cased:
 
 ## Input handling
 
-- File is read as UTF-8. Tabs advance to the next 2-column tab stop. One trailing newline is dropped. CRLF input works.
+- File is read as UTF-8. Tabs advance to the next multiple of `--tab-width` (default 4). One trailing newline is dropped. CRLF input works.
 - Control characters that XML 1.0 does not allow are removed from the rendered text.
 - Empty files render a minimum-size card.
 

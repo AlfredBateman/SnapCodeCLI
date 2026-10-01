@@ -46,7 +46,6 @@ export const THEME_PRESETS = {
   },
 };
 
-const TAB_WIDTH = 2;
 const graphemes = new Intl.Segmenter();
 // ponytail: approximates UAX #11 East Asian Wide/Fullwidth plus emoji presentation; swap for get-east-asian-width if a script misaligns.
 const WIDE =
@@ -71,7 +70,7 @@ export function detectLanguage(fileName) {
 }
 
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
-export async function renderSvg(code, { fileName = "", theme = "dark", footer = null } = {}) {
+export async function renderSvg(code, { fileName = "", theme = "dark", footer = null, tabWidth = 4 } = {}) {
   code = code.replace(/\r?\n$/, "");
   const themeKey = theme;
   const language = detectLanguage(fileName);
@@ -108,7 +107,7 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
       for (const token of tokens) {
         for (const { segment: g } of graphemes.segment(token.content)) {
           if (g === "\t") {
-            col = (Math.floor(col / TAB_WIDTH) + 1) * TAB_WIDTH;
+            col = (Math.floor(col / tabWidth) + 1) * tabWidth;
             continue;
           }
           if (g !== " ") {

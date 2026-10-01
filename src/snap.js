@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { Command, Option } from "commander";
+import { Command, InvalidArgumentError, Option } from "commander";
 import sharp from "sharp";
 import { renderSvg, THEME_PRESETS } from "./core.js";
 
@@ -42,6 +42,16 @@ function getGitBlameFooter(filePath) {
   } catch {
     return null;
   }
+}
+
+function integer(min, max) {
+  return (value) => {
+    const n = Number(value);
+    if (!Number.isInteger(n) || n < min || n > max) {
+      throw new InvalidArgumentError(`Must be an integer from ${min} to ${max}.`);
+    }
+    return n;
+  };
 }
 
 // The path is passed as an argument or env var, never through a shell.
@@ -92,6 +102,7 @@ async function run() {
     .option("-o, --output <file>", "Output PNG file name", "snapshot.png")
     .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
     .option("--footer", "Add a footer with the last git commit's author and date")
+    .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
     .parse(process.argv);
 
   const filePath = program.args[0];
@@ -117,6 +128,7 @@ async function run() {
     fileName: path.basename(filePath),
     theme: options.theme,
     footer: options.footer ? getGitBlameFooter(filePath) : null,
+    tabWidth: options.tabWidth,
   });
 
   const outputPath = path.resolve(process.cwd(), options.output);

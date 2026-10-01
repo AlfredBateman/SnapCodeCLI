@@ -44,6 +44,7 @@ On success it prints `Saved PNG: <absolute path>`.
 | `-o, --output <file>` | `snapshot.png` | Output path; must end in `.png`; missing folders are created; an existing file is overwritten |
 | `--clipboard <image\|none>` | `none` | `image` copies the PNG itself to the clipboard. A clipboard failure only prints a warning |
 | `--footer` | off | Add `Last edited by <author> on <date>` from the last git commit touching the file |
+| `--tab-width <n>` | `4` | Columns per tab stop, 1 to 16 |
 | `-V, --version` | | Print the version |
 | `-h, --help` | | Show help |
 
@@ -56,13 +57,13 @@ The SVG renderer has no filesystem or rasteriser dependency, so it also runs in 
 ```js
 import { renderSvg } from "snapcode-cli";
 
-const svg = await renderSvg(code, { fileName: "app.ts", theme: "dark", footer: null });
+const svg = await renderSvg(code, { fileName: "app.ts", theme: "dark", footer: null, tabWidth: 4 });
 ```
 
 ## Behaviour worth knowing
 
 - Language comes from Shiki's own language ids and aliases (so `.lua`, `.vue`, `.ps1`, `Dockerfile`, `Makefile` all work), plus a short override map for names Shiki does not alias. Anything else renders as plain text.
-- Tabs advance to the next 2-column tab stop. A final newline does not add a blank row.
+- Tabs advance to the next tab stop (every 4 columns unless `--tab-width` says otherwise). A final newline does not add a blank row.
 - Only the grammar and theme the file needs are loaded: a one-line file renders in about 0.5 s.
 - Columns line up on every OS: each character sits on a fixed 14.4 px grid, and CJK, fullwidth and emoji take two cells. The font is not bundled (the SVG asks for `JetBrains Mono, Menlo, Consolas, monospace`), so glyph shapes differ per OS. CJK and emoji need a system font that has them, and joined emoji such as 👨‍👩‍👧 render as separate glyphs in the PNG because librsvg does not join them.
 - Image size is not capped yet; very long files make very tall images.
