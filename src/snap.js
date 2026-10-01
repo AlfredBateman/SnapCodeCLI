@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { Command } from "commander";
-import clipboard from "clipboardy";
 import sharp from "sharp";
 import { renderSvg, THEME_PRESETS } from "./core.js";
 
@@ -44,6 +43,44 @@ function getGitBlameFooter(filePath) {
   }
 }
 
+// The path is passed as an argument or env var, never through a shell.
+function copyImageToClipboard(file) {
+  const opts = { stdio: "ignore", timeout: 10000 };
+  if (process.platform === "win32") {
+    execFileSync(
+      "powershell",
+      [
+        "-NoProfile",
+        "-STA",
+        "-Command",
+        "Add-Type -AssemblyName System.Windows.Forms, System.Drawing; [System.Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile($env:SNAPCODE_PNG))",
+      ],
+      { ...opts, env: { ...process.env, SNAPCODE_PNG: file } },
+    );
+  } else if (process.platform === "darwin") {
+    execFileSync(
+      "osascript",
+      [
+        "-e", "on run argv",
+        "-e", "set the clipboard to (read (POSIX file (item 1 of argv)) as «class PNGf»)",
+        "-e", "end run",
+        file,
+      ],
+      opts,
+    );
+  } else {
+    try {
+      execFileSync("wl-copy", ["--type", "image/png"], {
+        ...opts,
+        input: fs.readFileSync(file),
+        stdio: ["pipe", "ignore", "ignore"],
+      });
+    } catch {
+      execFileSync("xclip", ["-selection", "clipboard", "-t", "image/png", "-i", file], opts);
+    }
+  }
+}
+
 async function run() {
   program
     .name("snapcode")
@@ -53,8 +90,8 @@ async function run() {
     .option("-o, --output <file>", "Output PNG file name", "snapshot.png")
     .option(
       "--clipboard <mode>",
-      "Clipboard mode: path or none (default: path)",
-      "path",
+      "Clipboard mode: image or none",
+      "none",
     )
     .option("--footer", "Add a footer with the last git commit's author and date")
     .parse(process.argv);
@@ -79,8 +116,8 @@ async function run() {
   }
 
   const clipboardMode = String(options.clipboard).toLowerCase();
-  if (!["path", "none"].includes(clipboardMode)) {
-    console.error("Invalid clipboard mode. Use --clipboard path or --clipboard none.");
+  if (!["image", "none"].includes(clipboardMode)) {
+    console.error("Invalid clipboard mode. Use --clipboard image or --clipboard none.");
     process.exit(1);
   }
 
@@ -100,13 +137,15 @@ async function run() {
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   await sharp(Buffer.from(svg)).png().toFile(outputPath);
 
-  if (clipboardMode === "path") {
-    await clipboard.write(outputPath);
-  }
-
   console.log(`Saved PNG: ${outputPath}`);
-  if (clipboardMode === "path") {
-    console.log("Copied output path to clipboard.");
+
+  if (clipboardMode === "image") {
+    try {
+      copyImageToClipboard(outputPath);
+      console.log("Copied image to clipboard.");
+    } catch (error) {
+      console.error(`Warning: could not copy image to clipboard: ${error.message}`);
+    }
   }
 }
 
