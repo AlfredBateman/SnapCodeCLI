@@ -158,14 +158,12 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
       <stop offset="0%" stop-color="${preset.gradientStart}" />
       <stop offset="100%" stop-color="${preset.gradientEnd}" />
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.22" />
-    </filter>
   </defs>
   <rect width="${imageWidth}" height="${imageHeight}" fill="url(#bgGradient)" />
-  <g filter="url(#shadow)">
-    <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="10" ry="10" fill="${preset.windowBg}" />
-  </g>
+  ${[1, 2, 3, 4, 5, 6, 7, 8]
+    .map((i) => `<rect x="${cardX - i}" y="${cardY + i}" width="${cardWidth + i * 2}" height="${cardHeight + i * 2}" rx="${10 + i}" fill="#000000" opacity="0.025" />`)
+    .join("")}
+  <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="10" ry="10" fill="${preset.windowBg}" />
   <circle cx="${cardX + 20}" cy="${cardY + 22}" r="6" fill="#FF5F56"/>
   <circle cx="${cardX + 40}" cy="${cardY + 22}" r="6" fill="#FFBD2E"/>
   <circle cx="${cardX + 60}" cy="${cardY + 22}" r="6" fill="#27C93F"/>
