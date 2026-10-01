@@ -82,4 +82,5 @@ test("detects languages by alias, override and file name", () => {
   assert.equal(detectLanguage("Dockerfile"), "dockerfile");
   assert.equal(detectLanguage("CMakeLists.txt"), "cmake");
   assert.equal(detectLanguage("notes.unknownext"), "text");
+  assert.equal(detectLanguage("a.constructor"), "text"); // not an inherited property
 });

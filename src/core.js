@@ -70,7 +70,7 @@ export function detectLanguage(fileName) {
   const dot = base.lastIndexOf(".");
   const ext = dot === -1 ? base : base.slice(dot + 1);
   const lang = FILENAME_LANG[base] ?? EXT_LANG[ext] ?? ext;
-  return lang in bundledLanguages ? lang : "text";
+  return Object.hasOwn(bundledLanguages, lang) ? lang : "text";
 }
 
 // Keeps the first maxLines lines (0 = all) and reports how many lines the code had.
