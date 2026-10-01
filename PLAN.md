@@ -17,6 +17,7 @@ Decisions from the AUDIT_REPORT.md open questions and the scoping interview (202
 | npm publish (Q7) | Planned, as the last milestone. Name `snapcode-cli` is free. |
 | Stray PNGs (Q4) | Delete `test.png`, `test-fixed.png`, `test-fixed2.png`, `timing.png`. Add `files` and `.gitignore`. |
 | Performance priority | Startup time first (F-02: load one grammar). Large-file speed (F-01) is fixed as part of the quick wins. |
+| Web UI shape (2026-10-01) | Replaces the earlier static, no-server plan: `snapcode serve [--port]` runs a `node:http` server on 127.0.0.1 that renders through core and sharp, so web PNGs match the CLI. The page gets language and theme controls and a download button. Still comes after steps 6–7. |
 
 ## In scope
 
@@ -30,9 +31,9 @@ CLI
 - Test suite (`node --test`) and CI matrix (F-18); extract `buildSvg` (F-17)
 
 Web UI
-- Static, client-side, single page, no server
-- Live preview (debounced)
-- Copy image button
+- `snapcode serve [--port]`: `node:http`, bound to 127.0.0.1, one static page plus a render endpoint that reuses core; body size limit, input validation, opens the browser
+- Single page: paste or drop code, language and theme controls, live preview (debounced), download PNG
+- Vanilla HTML/CSS/JS, no build step; responsive and keyboard accessible
 
 ## Out of scope
 
@@ -40,7 +41,7 @@ Web UI
 - Custom background, custom padding, font size flag
 - Config file
 - SVG export
-- Web UI: multiple pages, server mode (`snapcode serve`), theme picker, download button
+- Web UI: multiple pages, frontend framework, copy image button
 - Distinct exit codes and `--quiet` (F-27)
 - Expanding the language map beyond the F-15 fallback unless trivial
 
@@ -53,5 +54,5 @@ Web UI
 5. **Refactor and tests**: extract `buildSvg` (F-17), add `node --test` and the CI matrix (F-18).
 6. **Behaviour changes**: footer opt-in and parsing fix, image clipboard with safe failure, `--max-lines` clip, `--tab-width`.
 7. **New CLI features**: line numbers, line highlighting, JPG export.
-8. **Web UI**: single static page with live preview and copy image button, per DESIGN.md.
+8. **Web UI**: `snapcode serve` with a single page, live preview, language and theme controls and PNG download, per DESIGN.md.
 9. **Publish** to npm.
