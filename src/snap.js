@@ -113,7 +113,7 @@ function getGitBlameFooter(filePath) {
 
 async function run() {
   program
-    .name("snap")
+    .name("snapcode")
     .description("Generate syntax-highlighted PNG snapshots from source code files.")
     .argument("<filepath>", "Path to the source code file")
     .option("-t, --theme <theme>", "Theme variant: dark or light", "dark")

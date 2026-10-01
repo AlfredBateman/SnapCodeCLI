@@ -1,9 +1,9 @@
 # Command reference
 
-SnapCode exposes one executable, `snap` (`package.json:6-8` → `src/snap.js`), with one command and no subcommands. Argument parsing is done by [commander](https://github.com/tj/commander.js) 12 in `src/snap.js:115-130`.
+SnapCode exposes one executable, `snapcode` (`package.json:6-8` → `src/snap.js`), with one command and no subcommands. Argument parsing is done by [commander](https://github.com/tj/commander.js) 12 in `src/snap.js:115-130`.
 
 ```text
-snap [options] <filepath>
+snapcode [options] <filepath>
 ```
 
 ## Arguments
@@ -22,7 +22,7 @@ snap [options] <filepath>
 | `--no-footer` | footer enabled | none | `snap.js:126-129, 202` |
 | `-h, --help` | | built in | commander |
 
-`--version` is **not** defined; `snap --version` exits 1 with `error: unknown option '--version'`.
+`--version` is **not** defined; `snapcode --version` exits 1 with `error: unknown option '--version'`.
 
 The `--help` text prints the clipboard default twice (`(default: path) (default: "path")`) because the default is written into both the description and the option definition (`snap.js:123-124`).
 
@@ -82,10 +82,10 @@ Success messages go to stdout; errors go to stderr as a single line with no stac
 ## Examples (all executed during the audit)
 
 ```bash
-snap src/snap.js -o out.png --clipboard none     # dark, default footer
-snap README.md -t LIGHT -o readme.png --clipboard none
-snap nope.js            # File not found: nope.js          (exit 1)
-snap src/snap.js -t blue    # Invalid theme. Use --theme dark or --theme light. (exit 1)
-snap src/snap.js -o out.jpg # Output file must end with .png (exit 1)
-snap                    # error: missing required argument 'filepath' (exit 1)
+snapcode src/snap.js -o out.png --clipboard none     # dark, default footer
+snapcode README.md -t LIGHT -o readme.png --clipboard none
+snapcode nope.js            # File not found: nope.js          (exit 1)
+snapcode src/snap.js -t blue    # Invalid theme. Use --theme dark or --theme light. (exit 1)
+snapcode src/snap.js -o out.jpg # Output file must end with .png (exit 1)
+snapcode                    # error: missing required argument 'filepath' (exit 1)
 ```

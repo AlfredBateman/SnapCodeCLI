@@ -4,7 +4,7 @@
   "description": "Generate beautiful syntax-highlighted code snapshots as PNG from the terminal.",
   "type": "module",
   "bin": {
-    "snap": "./src/snap.js"
+    "snapcode": "./src/snap.js"
   },
   "scripts": {
     "start": "node ./src/snap.js",

@@ -3,7 +3,7 @@
 Turn a source file into a syntax-highlighted PNG, styled like a code-screenshot card (macOS-style title bar, gradient background, drop shadow), straight from the terminal.
 
 ```text
-snap src/snap.js  →  snapshot.png
+snapcode src/snap.js  →  snapshot.png
 ```
 
 ## Requirements
@@ -16,17 +16,17 @@ snap src/snap.js  →  snapshot.png
 
 ```bash
 npm install     # from the repo root
-npm link        # optional: puts `snap` on your PATH
+npm link        # optional: puts `snapcode` on your PATH
 ```
 
 ## Quick start
 
 ```bash
 # Dark theme (default), writes ./snapshot.png and copies its path to the clipboard
-snap ./index.js
+snapcode ./index.js
 
 # Light theme, custom output, no clipboard, no git footer
-snap ./index.js -t light -o index.png --clipboard none --no-footer
+snapcode ./index.js -t light -o index.png --clipboard none --no-footer
 
 # Without linking
 npm start -- ./index.js -o index.png
