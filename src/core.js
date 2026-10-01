@@ -100,16 +100,15 @@ export async function renderSvg(
   { fileName = "", language, theme = "dark", footer = null, tabWidth = 4, lineNumbers = false, highlight = [] } = {},
 ) {
   code = code.replace(/\r?\n$/, "");
-  const themeKey = theme;
   language ??= detectLanguage(fileName);
-  const preset = THEME_PRESETS[themeKey];
+  const preset = THEME_PRESETS[theme];
 
   // Shorthand loads only this grammar and theme, on demand.
   const tokenResult = await codeToTokens(code, {
     lang: language,
     theme: preset.shikiTheme,
   });
-  const lines = tokenResult.tokens || [];
+  const lines = tokenResult.tokens;
 
   const fontSize = 24;
   const lineHeight = 34;
@@ -126,7 +125,7 @@ export async function renderSvg(
 
   // Every grapheme is anchored to its own cell, so columns line up whatever font the
   // renderer picks (librsvg ignores embedded @font-face and x lists, so neither is used).
-  const defaultColor = themeKey === "dark" ? "#F8F8F2" : "#24292F";
+  const defaultColor = theme === "dark" ? "#F8F8F2" : "#24292F";
   const cell = (col, fill, g) =>
     `<tspan x="${+(codeX + col * charWidth).toFixed(2)}" fill="${fill}">${escapeXml(g)}</tspan>`;
   // Right-aligned numbers, then two blank cells before the code.
@@ -158,8 +157,7 @@ export async function renderSvg(
   const codeWidth = Math.max(minCodeWidth, Math.ceil(maxCols * charWidth));
   const codeHeight = Math.max(lineHeight, lines.length * lineHeight);
   const cardWidth = codeWidth + innerPadding * 2;
-  const footerText = footer;
-  const footerSpace = footerText ? footerHeight : 0;
+  const footerSpace = footer ? footerHeight : 0;
   const cardHeight = titleBarHeight + codeHeight + innerPadding * 2 + footerSpace;
   const imageWidth = cardWidth + outerPadding * 2;
   const imageHeight = cardHeight + outerPadding * 2;
@@ -173,11 +171,11 @@ export async function renderSvg(
     )
     .join("");
 
-  const footerSvg = footerText
+  const footerSvg = footer
     ? `<text x="${cardX + innerPadding}" y="${cardY + cardHeight - 10}" fill="${
-        themeKey === "dark" ? "#FFFFFF" : "#24292F"
+        theme === "dark" ? "#FFFFFF" : "#24292F"
       }" opacity="0.5" font-size="16" font-family="JetBrains Mono, Menlo, Consolas, monospace">${escapeXml(
-        footerText,
+        footer,
       )}</text>`
     : "";
 
