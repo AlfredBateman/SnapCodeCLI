@@ -13,8 +13,7 @@
   "scripts": {
     "start": "node ./src/snap.js",
     "test": "node --test",
-    "dev": "node --watch-path=src ./src/snap.js serve --no-open",
-    "snap": "node ./src/snap.js"
+    "dev": "node --watch-path=src ./src/snap.js serve --no-open"
   },
   "keywords": [
     "cli",
