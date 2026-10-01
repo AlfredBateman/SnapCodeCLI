@@ -55,6 +55,7 @@ export const THEME_PRESETS = {
 
 function escapeXml(value) {
   return value
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // not allowed in XML 1.0
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

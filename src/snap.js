@@ -70,8 +70,8 @@ async function run() {
     return;
   }
 
-  if (!fs.existsSync(filePath)) {
-    console.error(`File not found: ${filePath}`);
+  if (!fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
+    console.error(`File not found or not a regular file: ${filePath}`);
     process.exit(1);
   }
 
@@ -93,6 +93,11 @@ async function run() {
   }
 
   const code = fs.readFileSync(filePath, "utf8");
+  if (code.includes("\0")) {
+    console.error(`Binary file not supported: ${filePath}`);
+    process.exit(1);
+  }
+
   const svg = await renderSvg(code, {
     fileName: path.basename(filePath),
     theme: themeKey,
@@ -100,6 +105,7 @@ async function run() {
   });
 
   const outputPath = path.resolve(process.cwd(), options.output);
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   await sharp(Buffer.from(svg)).png().toFile(outputPath);
 
   if (clipboardMode === "path") {
