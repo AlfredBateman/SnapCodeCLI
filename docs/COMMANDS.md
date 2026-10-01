@@ -17,7 +17,8 @@ snapcode [options] <filepath>
 | Flag | Default | Validation |
 |---|---|---|
 | `-t, --theme <theme>` | `dark` | `dark` or `light` (commander `choices`, case-sensitive) |
-| `-o, --output <file>` | `snapshot.png` | Must end in `.png` (case-insensitive). Resolved against the current directory. Missing parent folders are created. An existing file is overwritten. |
+| `-f, --format <format>` | `png` | `png` or `jpg` (commander `choices`). JPG uses sharp's `jpeg({ quality: 90 })`. |
+| `-o, --output <file>` | `snapshot.<format>` | Must end in `.png` for `png`, `.jpg` or `.jpeg` for `jpg` (case-insensitive). Resolved against the current directory. Missing parent folders are created. An existing file is overwritten. |
 | `--clipboard <mode>` | `none` | `image` or `none` (commander `choices`) |
 | `--footer` | off | none |
 | `--tab-width <n>` | `4` | Integer from 1 to 16 |
@@ -73,13 +74,13 @@ Runs `git rev-parse --show-toplevel` in the file's directory, then `git log -1 -
 
 ## Clipboard (`--clipboard image`)
 
-Runs after `Saved PNG` is printed. The PNG path is passed as an argument or environment variable, never through a shell:
+Runs after `Saved PNG`/`Saved JPG` is printed. The image path is passed as an argument or environment variable, never through a shell:
 
 | Platform | Command |
 |---|---|
 | Windows | `powershell -STA` with `System.Windows.Forms.Clipboard::SetImage` |
-| macOS | `osascript`, reading the file as `«class PNGf»` |
-| Linux | `wl-copy --type image/png`, falling back to `xclip -selection clipboard -t image/png` |
+| macOS | `osascript`, reading the file as `«class PNGf»` or `JPEG picture` |
+| Linux | `wl-copy --type image/png` (or `image/jpeg`), falling back to `xclip -selection clipboard -t <same type>` |
 
 Any failure prints `Warning: could not copy image to clipboard: <reason>` to stderr and the run still exits 0.
 
@@ -87,7 +88,7 @@ Any failure prints `Warning: could not copy image to clipboard: <reason>` to std
 
 | Code | When |
 |---|---|
-| 0 | PNG written (a clipboard failure is only a warning) |
+| 0 | Image written (clipping and clipboard failures are only warnings) |
 | 1 | Every failure: bad option value, missing or non-regular file, binary file, commander parse errors, render/write errors |
 
 Success messages go to stdout; errors and warnings go to stderr as a single line with no stack trace.
@@ -99,7 +100,8 @@ snapcode src/snap.js -o out.png --clipboard none     # dark, no footer
 snapcode README.md -t light -o shots/readme.png --footer
 snapcode nope.js            # File not found or not a regular file: nope.js  (exit 1)
 snapcode src/snap.js -t blue    # error: option '-t, --theme <theme>' argument 'blue' is invalid. Allowed choices are dark, light.  (exit 1)
-snapcode src/snap.js -o out.jpg # Output file must end with .png  (exit 1)
+snapcode src/snap.js -f jpg --line-numbers --highlight 3,5-8   # writes snapshot.jpg
+snapcode src/snap.js -o out.jpg # Output file must end with .png for --format png  (exit 1)
 snapcode a.js b.js          # error: too many arguments...  (exit 1)
 snapcode                    # error: missing required argument 'filepath'  (exit 1)
 ```

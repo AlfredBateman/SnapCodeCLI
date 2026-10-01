@@ -11,7 +11,7 @@ Two ES modules, no build step:
 |---|---|---|
 | shiki ^4 | tokenising source into coloured spans; language ids and aliases | `core.js` |
 | commander ^15 | argument and option parsing, `--help`, `--version`, `choices` | `snap.js` |
-| sharp ^0.35.5 | rasterising the SVG to PNG (via libvips/librsvg) | `snap.js` |
+| sharp ^0.35.5 | rasterising the SVG to PNG or JPG (via libvips/librsvg) | `snap.js` |
 | node:child_process | `git` for the footer; OS clipboard commands | `snap.js` |
 
 ## Data flow
@@ -19,7 +19,7 @@ Two ES modules, no build step:
 ```mermaid
 flowchart TD
     A[argv] --> B[commander parse + choices]
-    B --> C{regular file, .png output,<br/>no NUL bytes}
+    B --> C{regular file, output extension<br/>matches --format, no NUL bytes}
     C -- invalid --> X[stderr message, exit 1]
     C -- ok --> D[read file as UTF-8<br/>clipLines to --max-lines, warn if cut]
     B -. --footer .-> H[git rev-parse + git log -1]
@@ -31,8 +31,8 @@ flowchart TD
       G --> I[layout: grapheme columns on a 14.4 px grid<br/>wide = 2 cells, tab = next stop<br/>width = widest line, height = lines x 34 + chrome]
       I --> J[SVG: one text per line, one anchored tspan per grapheme]
     end
-    J --> K[sharp SVG to PNG file]
-    K --> N[print Saved PNG]
+    J --> K[sharp SVG to PNG or JPG file]
+    K --> N[print Saved PNG/JPG]
     N --> L{--clipboard image?}
     L -- yes --> M[OS clipboard command<br/>failure = warning only]
     L -- no --> Z[exit 0]
@@ -44,7 +44,7 @@ flowchart TD
 1. **Tokenise.** Shiki's `codeToTokens` shorthand lazily loads only the requested grammar and theme and returns, per line, tokens with `content` and `color`.
 2. **Place.** Each line is one `<text>` at `y = codeY + row*34 + 24`. Tokens are split into grapheme clusters (`Intl.Segmenter`), and each visible cluster is its own `<tspan x="codeX + col*14.4">` in the token's colour. `col` counts display cells: CJK, fullwidth and emoji take 2, everything else 1, and a tab jumps to the next multiple of `tabWidth` (default 4). Spaces only advance `col`. With `lineNumbers`, a gutter of (digits + 2) cells comes first and each number is right-aligned in it, digit by digit on the same grid. The widest line's column count sets the canvas width.
 3. **Frame.** Gradient background, a soft shadow made of eight stacked translucent rounded rects, the card, a full-width band behind each highlighted row, three traffic-light circles, the file name and the optional footer. There is no SVG filter (an `feDropShadow` cost about 66 s on tall images).
-4. **Rasterise.** `sharp(Buffer.from(svg)).png().toFile(...)`. Fonts come from the host system. Embedding one does not work: librsvg ignores `@font-face` (tested with a base64 TTF; the output was byte-identical).
+4. **Rasterise.** `sharp(Buffer.from(svg))`, then `.png()` or `.jpeg({ quality: 90 })`, then `.toFile(...)`. Fonts come from the host system. Embedding one does not work: librsvg ignores `@font-face` (tested with a base64 TTF; the output was byte-identical).
 
 ## Key design decisions
 

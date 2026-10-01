@@ -1,6 +1,6 @@
 # SnapCode CLI
 
-Turn a source file into a syntax-highlighted PNG, styled like a code-screenshot card (macOS-style title bar, gradient background, soft shadow), straight from the terminal.
+Turn a source file into a syntax-highlighted PNG or JPG, styled like a code-screenshot card (macOS-style title bar, gradient background, soft shadow), straight from the terminal.
 
 ```text
 snapcode src/snap.js  →  snapshot.png
@@ -28,12 +28,15 @@ snapcode ./index.js
 # Light theme, custom output, copy the image to the clipboard, add the git footer
 snapcode ./index.js -t light -o shots/index.png --clipboard image --footer
 
+# JPG with line numbers and lines 3 and 5-8 highlighted, writes ./snapshot.jpg
+snapcode ./index.js -f jpg --line-numbers --highlight 3,5-8
+
 # Without linking
 npm start -- ./index.js -o index.png
 node src/snap.js ./index.js
 ```
 
-On success it prints `Saved PNG: <absolute path>`.
+On success it prints `Saved PNG: <absolute path>` (or `Saved JPG:`).
 
 ## Options
 
@@ -41,8 +44,9 @@ On success it prints `Saved PNG: <absolute path>`.
 |---|---|---|
 | `<filepath>` | required | Source file to render (exactly one) |
 | `-t, --theme <dark\|light>` | `dark` | `dark` = Shiki `dracula`, `light` = `github-light` |
-| `-o, --output <file>` | `snapshot.png` | Output path; must end in `.png`; missing folders are created; an existing file is overwritten |
-| `--clipboard <image\|none>` | `none` | `image` copies the PNG itself to the clipboard. A clipboard failure only prints a warning |
+| `-f, --format <png\|jpg>` | `png` | Image format. JPG is written at quality 90 |
+| `-o, --output <file>` | `snapshot.<format>` | Output path; must end in `.png`, or `.jpg`/`.jpeg` with `-f jpg`; missing folders are created; an existing file is overwritten |
+| `--clipboard <image\|none>` | `none` | `image` copies the image itself to the clipboard. A clipboard failure only prints a warning |
 | `--footer` | off | Add `Last edited by <author> on <date>` from the last git commit touching the file |
 | `--tab-width <n>` | `4` | Columns per tab stop, 1 to 16 |
 | `--max-lines <n>` | `100` | Render only the first `n` lines and warn on stderr; `0` renders everything |

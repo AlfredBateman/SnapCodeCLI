@@ -31,7 +31,7 @@ node src/snap.js src/snap.js -o out.png --clipboard none   # happy path
 node src/snap.js nope.js            # expect exit 1, "File not found or not a regular file"
 node src/snap.js src                # expect exit 1, same message (directory)
 node src/snap.js x.js -t blue       # expect exit 1, "Allowed choices are dark, light"
-node src/snap.js x.js -o x.jpg      # expect exit 1, "must end with .png"
+node src/snap.js x.js -o x.jpg      # expect exit 1, "must end with .png for --format png"
 ```
 
 Look at the image, not just the exit code: spacing (e.g. `import fs from`), tab handling, wide characters, and that the footer appears with `--footer` inside a git repo.

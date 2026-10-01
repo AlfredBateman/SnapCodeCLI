@@ -55,8 +55,9 @@ function integer(min, max) {
 }
 
 // The path is passed as an argument or env var, never through a shell.
-function copyImageToClipboard(file) {
+function copyImageToClipboard(file, format) {
   const opts = { stdio: "ignore", timeout: 10000 };
+  const mime = format === "jpg" ? "image/jpeg" : "image/png";
   if (process.platform === "win32") {
     execFileSync(
       "powershell",
@@ -64,16 +65,16 @@ function copyImageToClipboard(file) {
         "-NoProfile",
         "-STA",
         "-Command",
-        "Add-Type -AssemblyName System.Windows.Forms, System.Drawing; [System.Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile($env:SNAPCODE_PNG))",
+        "Add-Type -AssemblyName System.Windows.Forms, System.Drawing; [System.Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile($env:SNAPCODE_IMAGE))",
       ],
-      { ...opts, env: { ...process.env, SNAPCODE_PNG: file } },
+      { ...opts, env: { ...process.env, SNAPCODE_IMAGE: file } },
     );
   } else if (process.platform === "darwin") {
     execFileSync(
       "osascript",
       [
         "-e", "on run argv",
-        "-e", "set the clipboard to (read (POSIX file (item 1 of argv)) as «class PNGf»)",
+        "-e", `set the clipboard to (read (POSIX file (item 1 of argv)) as ${format === "jpg" ? "JPEG picture" : "«class PNGf»"})`,
         "-e", "end run",
         file,
       ],
@@ -81,13 +82,13 @@ function copyImageToClipboard(file) {
     );
   } else {
     try {
-      execFileSync("wl-copy", ["--type", "image/png"], {
+      execFileSync("wl-copy", ["--type", mime], {
         ...opts,
         input: fs.readFileSync(file),
         stdio: ["pipe", "ignore", "ignore"],
       });
     } catch {
-      execFileSync("xclip", ["-selection", "clipboard", "-t", "image/png", "-i", file], opts);
+      execFileSync("xclip", ["-selection", "clipboard", "-t", mime, "-i", file], opts);
     }
   }
 }
@@ -96,10 +97,11 @@ async function run() {
   program
     .name("snapcode")
     .version(pkg.version)
-    .description("Generate syntax-highlighted PNG snapshots from source code files.")
+    .description("Generate syntax-highlighted PNG or JPG snapshots from source code files.")
     .argument("<filepath>", "Path to the source code file")
     .addOption(new Option("-t, --theme <theme>", "Theme variant").choices(Object.keys(THEME_PRESETS)).default("dark"))
-    .option("-o, --output <file>", "Output PNG file name", "snapshot.png")
+    .addOption(new Option("-f, --format <format>", "Image format").choices(["png", "jpg"]).default("png"))
+    .option("-o, --output <file>", "Output file name (default: snapshot.<format>)")
     .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
     .option("--footer", "Add a footer with the last git commit's author and date")
     .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
@@ -122,8 +124,10 @@ async function run() {
     process.exit(1);
   }
 
-  if (!String(options.output).toLowerCase().endsWith(".png")) {
-    console.error("Output file must end with .png");
+  const output = options.output ?? `snapshot.${options.format}`;
+  const extensions = options.format === "jpg" ? [".jpg", ".jpeg"] : [".png"];
+  if (!extensions.includes(path.extname(output).toLowerCase())) {
+    console.error(`Output file must end with ${extensions.join(" or ")} for --format ${options.format}`);
     process.exit(1);
   }
 
@@ -147,15 +151,16 @@ async function run() {
     highlight: options.highlight,
   });
 
-  const outputPath = path.resolve(process.cwd(), options.output);
+  const outputPath = path.resolve(process.cwd(), output);
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  await sharp(Buffer.from(svg)).png().toFile(outputPath);
+  const image = sharp(Buffer.from(svg));
+  await (options.format === "jpg" ? image.jpeg({ quality: 90 }) : image.png()).toFile(outputPath);
 
-  console.log(`Saved PNG: ${outputPath}`);
+  console.log(`Saved ${options.format.toUpperCase()}: ${outputPath}`);
 
   if (options.clipboard === "image") {
     try {
-      copyImageToClipboard(outputPath);
+      copyImageToClipboard(outputPath, options.format);
       console.log("Copied image to clipboard.");
     } catch (error) {
       console.error(`Warning: could not copy image to clipboard: ${error.message}`);
