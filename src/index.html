@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SnapCode</title>
+<style>
+  /* Tokens from DESIGN.md. Dark only: DESIGN.md ships no light mode. */
+  :root {
+    color-scheme: dark;
+    --primary: #5e6ad2;
+    --on-primary: #ffffff;
+    --primary-hover: #828fff;
+    --primary-focus: #5e69d1;
+    --ink: #f7f8f8;
+    --ink-muted: #d0d6e0;
+    --ink-subtle: #8a8f98;
+    --ink-tertiary: #62666d;
+    --canvas: #010102;
+    --surface-1: #0f1011;
+    --surface-2: #141516;
+    --surface-3: #18191a;
+    --hairline: #23252a;
+    --hairline-strong: #34343a;
+    --success: #27a644;
+    --overlay: #000000;
+    --font: Inter, "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --ring: 2px solid rgb(94 105 209 / 50%); /* primary-focus at 50% */
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--canvas);
+    color: var(--ink);
+    font: 400 16px/1.5 var(--font);
+    letter-spacing: -0.05px;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: var(--ring); outline-offset: 2px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* top-nav */
+  .nav {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 16px; letter-spacing: -0.2px; }
+  .brand-mark { width: 24px; height: 24px; border-radius: 6px; background: var(--primary); display: grid; place-items: center; }
+  .nav-meta { color: var(--ink-subtle); font-size: 12px; line-height: 1.4; }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 48px 24px 96px; }
+  .intro { margin-bottom: 32px; }
+  h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; line-height: 1.2; letter-spacing: -0.6px; }
+  .lead { margin: 0; color: var(--ink-subtle); font-size: 16px; }
+
+  .grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 768px) {
+    .grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  }
+
+  /* feature-card / product-screenshot-card, level 1 lift with the top edge highlight */
+  .panel {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+    background: var(--surface-1);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+  }
+  .panel-preview { border-radius: 16px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 40px; }
+  .panel-title { display: flex; align-items: center; gap: 12px; }
+  .eyebrow { margin: 0; color: var(--ink-subtle); font-size: 13px; font-weight: 500; line-height: 1.3; letter-spacing: 0.4px; }
+
+  /* buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: 500 14px/1.2 var(--font);
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--primary); color: var(--on-primary); }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:active { background: var(--primary-focus); }
+  .btn-primary:disabled { background: var(--surface-2); border-color: var(--hairline); color: var(--ink-tertiary); cursor: not-allowed; }
+  .btn-secondary { background: var(--surface-1); color: var(--ink); border-color: var(--hairline); }
+  .btn-secondary:hover { background: var(--surface-2); border-color: var(--hairline-strong); }
+
+  /* controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .field-grow { flex: 1 1 180px; }
+  .label { color: var(--ink-subtle); font-size: 12px; line-height: 1.4; }
+  select, textarea {
+    width: 100%;
+    background: var(--surface-1);
+    color: var(--ink);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  select {
+    min-height: 40px;
+    font: 400 16px/1.5 var(--font);
+    letter-spacing: -0.05px;
+    appearance: none;
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238a8f98' stroke-width='1.5'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+  }
+  select option { background: var(--surface-3); color: var(--ink); }
+  textarea {
+    display: block;
+    min-height: 360px;
+    resize: vertical;
+    font: 400 13px/1.5 var(--mono);
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+  }
+  textarea::placeholder { color: var(--ink-tertiary); }
+  .meta { margin: 0; color: var(--ink-subtle); font-size: 12px; line-height: 1.4; }
+
+  /* pricing-tab toggle, used for the theme */
+  .tabs { display: inline-flex; gap: 4px; padding: 3px; background: var(--canvas); border: 1px solid var(--hairline); border-radius: 9999px; }
+  .tab { position: relative; display: block; }
+  .tab input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .tab span {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    color: var(--ink-subtle);
+    font: 500 14px/1.2 var(--font);
+  }
+  .tab input:checked + span { background: var(--surface-2); color: var(--ink); }
+  .tab input:hover:not(:checked) + span { color: var(--ink-muted); }
+  .tab input:focus-visible + span { outline: var(--ring); outline-offset: 2px; }
+
+  /* status-badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: var(--surface-2);
+    color: var(--ink-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-tertiary); }
+  [data-state="ready"] .badge::before { background: var(--success); }
+
+  /* preview frame and its states */
+  .frame {
+    position: relative;
+    display: grid;
+    place-items: safe center;
+    min-height: 320px;
+    max-height: 75vh; /* tall snapshots scroll inside, so the header and Download stay in view */
+    padding: 24px;
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    overflow: auto;
+  }
+  .frame img { display: block; max-width: 100%; height: auto; border-radius: 4px; }
+  .state { max-width: 360px; text-align: center; }
+  .state-title { margin: 0 0 4px; font-size: 16px; font-weight: 500; }
+  .state-text { margin: 0; color: var(--ink-subtle); font-size: 14px; overflow-wrap: anywhere; }
+  [data-state="ready"] .state, [data-state="loading"] .state { display: none; }
+  [data-state="empty"] .frame img, [data-state="error"] .frame img { display: none; }
+  [data-state="empty"] .state-error, [data-state="error"] .state-empty { display: none; }
+  [data-state="loading"] .frame img { opacity: 0.5; }
+  [data-state="loading"] .frame img:not([src]) { display: none; }
+
+  /* drop overlay */
+  .drop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    place-items: center;
+    background: rgb(0 0 0 / 70%);
+    pointer-events: none;
+  }
+  .dragging .drop { display: grid; }
+  .drop-card {
+    padding: 24px 32px;
+    background: var(--surface-2);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    outline: var(--ring);
+    outline-offset: 4px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn, .tab span, select { transition: background-color 120ms, border-color 120ms, color 120ms; }
+  }
+  @media (pointer: coarse) {
+    .btn, select { min-height: 44px; }
+    .tab span { min-height: 44px; }
+  }
+  @media (max-width: 767px) {
+    main { padding: 32px 16px 64px; }
+    .nav { padding: 0 16px; }
+    textarea { min-height: 240px; }
+    .frame { min-height: 200px; padding: 16px; }
+  }
+  @media (max-width: 479px) {
+    .nav-meta { display: none; }
+    .panel { padding: 16px; }
+  }
+</style>
+</head>
+<body data-max-bytes="{{maxBytes}}" data-max-lines="{{maxLines}}">
+<header class="nav">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5 1.5 7 5 10.5M9 3.5 12.5 7 9 10.5"/></svg>
+    </span>
+    SnapCode
+  </div>
+  <span class="nav-meta">Runs locally. Code never leaves this machine.</span>
+</header>
+
+<main>
+  <div class="intro">
+    <h1>Code snapshot</h1>
+    <p class="lead">Paste or drop code, pick a language and theme, then download the PNG.</p>
+  </div>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="code-title">
+      <div class="panel-head">
+        <h2 class="eyebrow" id="code-title">Code</h2>
+        <button type="button" class="btn btn-secondary" id="open">Open file…</button>
+        <input type="file" id="file" class="sr-only" tabindex="-1" aria-hidden="true">
+      </div>
+      <div class="controls">
+        <div class="field field-grow">
+          <label class="label" for="language">Language</label>
+          <select id="language">
+            <option value="auto">Auto-detect</option>
+            {{languages}}
+          </select>
+        </div>
+        <div class="field">
+          <span class="label" id="theme-label">Theme</span>
+          <div class="tabs" role="radiogroup" aria-labelledby="theme-label">{{themes}}</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="sr-only" for="code">Source code</label>
+        <textarea id="code" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="meta"
+          placeholder="Paste code here, or drop a file anywhere on the page."></textarea>
+        <p class="meta" id="meta">Empty</p>
+      </div>
+    </section>
+
+    <section class="panel panel-preview" id="preview" data-state="empty" aria-labelledby="preview-title">
+      <div class="panel-head">
+        <div class="panel-title">
+          <h2 class="eyebrow" id="preview-title">Preview</h2>
+          <span class="badge" id="status" role="status">Waiting for code</span>
+        </div>
+        <button type="button" class="btn btn-primary" id="download" disabled>Download PNG</button>
+      </div>
+      <p class="meta" id="note" hidden></p>
+      <div class="frame" id="frame">
+        <img id="image" alt="Rendered snapshot of the code">
+        <div class="state state-empty">
+          <p class="state-title">Nothing to preview yet</p>
+          <p class="state-text">Paste code on the left, drop a file here, or choose Open file.</p>
+        </div>
+        <div class="state state-error" role="alert">
+          <p class="state-title">Couldn't render</p>
+          <p class="state-text" id="error"></p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="drop" aria-hidden="true"><div class="drop-card">Drop a file to open it</div></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const code = $("code"), language = $("language"), preview = $("preview"), image = $("image");
+  const statusEl = $("status"), errorEl = $("error"), note = $("note"), meta = $("meta"), download = $("download"), file = $("file");
+  const MAX_BYTES = Number(document.body.dataset.maxBytes);
+  const MAX_LINES = Number(document.body.dataset.maxLines);
+  const STATUS = { empty: "Waiting for code", loading: "Rendering…", ready: "Ready", error: "Error" };
+  const autoLabel = language.options[0].textContent;
+  let fileName = "";
+  let imageUrl = null;
+  let controller = null;
+  let timer = 0;
+
+  const kb = (bytes) => (bytes < 1024 ? `${bytes} B` : `${+(bytes / 1024).toFixed(1)} KB`);
+  const lineCount = (text) => text.replace(/\r?\n$/, "").split(/\r?\n/).length;
+
+  function show(state, message = "") {
+    preview.dataset.state = state;
+    statusEl.textContent = STATUS[state];
+    errorEl.textContent = message;
+    download.disabled = state !== "ready";
+    preview.setAttribute("aria-busy", state === "loading");
+    if (state === "empty" || state === "error") note.hidden = true;
+  }
+
+  function updateMeta(text, bytes) {
+    if (!text) return (meta.textContent = "Empty");
+    const lines = lineCount(text);
+    meta.textContent = `${lines} ${lines === 1 ? "line" : "lines"} · ${kb(bytes)}${fileName ? ` · ${fileName}` : ""}`;
+  }
+
+  async function render() {
+    clearTimeout(timer);
+    controller?.abort();
+    const text = code.value;
+    const bytes = new TextEncoder().encode(text).length;
+    updateMeta(text, bytes);
+    if (!text.trim()) return show("empty");
+    if (bytes > MAX_BYTES) return show("error", `This code is ${kb(bytes)}. The limit is ${kb(MAX_BYTES)}.`);
+
+    const ac = (controller = new AbortController());
+    show("loading");
+    try {
+      const theme = document.querySelector('input[name="theme"]:checked').value;
+      const res = await fetch("/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: text, language: language.value, theme, fileName }),
+        signal: ac.signal,
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `The server answered ${res.status}.`);
+      const blob = await res.blob();
+      if (ac !== controller) return;
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+      image.src = imageUrl = URL.createObjectURL(blob);
+
+      const detected = language.querySelector(`option[value="${res.headers.get("X-Snapcode-Language")}"]`);
+      language.options[0].textContent = detected && detected.value !== "text" ? `Auto-detect (${detected.textContent})` : autoLabel;
+      const notes = [];
+      if (res.headers.get("X-Snapcode-Clipped") === "1") {
+        notes.push(`Showing the first ${MAX_LINES} of ${res.headers.get("X-Snapcode-Lines")} lines.`);
+      }
+      if (language.value === "auto" && !detected) notes.push("No language detected, so it renders as plain text. Pick one above to add highlighting.");
+      note.textContent = notes.join(" ");
+      note.hidden = !notes.length;
+      show("ready");
+    } catch (error) {
+      if (ac !== controller) return;
+      const offline = error instanceof TypeError; // fetch's network failure
+      show("error", offline ? "Can't reach the snapcode server. Is `snapcode serve` still running?" : error.message);
+    }
+  }
+
+  async function openFile(f) {
+    if (!f) return;
+    if (f.size > MAX_BYTES) return show("error", `${f.name} is ${kb(f.size)}. The limit is ${kb(MAX_BYTES)}.`);
+    const text = await f.text();
+    if (text.includes("\0")) return show("error", `${f.name} looks like a binary file.`);
+    fileName = f.name;
+    code.value = text;
+    language.value = "auto";
+    render();
+  }
+
+  code.addEventListener("input", () => {
+    if (!code.value) fileName = "";
+    clearTimeout(timer);
+    timer = setTimeout(render, 400);
+  });
+  language.addEventListener("change", render);
+  document.querySelectorAll('input[name="theme"]').forEach((r) => r.addEventListener("change", render));
+
+  $("open").addEventListener("click", () => file.click());
+  file.addEventListener("change", () => {
+    openFile(file.files[0]);
+    file.value = "";
+  });
+
+  download.addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = imageUrl;
+    a.download = `${fileName.replace(/\.[^.]*$/, "") || "snapshot"}.png`;
+    a.click();
+  });
+
+  const hasFiles = (e) => e.dataTransfer?.types.includes("Files");
+  document.addEventListener("dragover", (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    document.body.classList.add("dragging");
+  });
+  document.addEventListener("dragleave", (e) => {
+    if (!e.relatedTarget) document.body.classList.remove("dragging");
+  });
+  document.addEventListener("drop", (e) => {
+    document.body.classList.remove("dragging");
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    openFile(e.dataTransfer.files[0]);
+  });
+</script>
+</body>
+</html>
