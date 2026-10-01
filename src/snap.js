@@ -12,21 +12,13 @@ const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.ur
 
 function getGitBlameFooter(filePath) {
   const absPath = path.resolve(filePath);
-  const fileDir = path.dirname(absPath);
 
   try {
-    const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], {
-      cwd: fileDir,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-
-    const relPath = path.relative(repoRoot, absPath);
     const info = execFileSync(
       "git",
-      ["log", "-1", "--format=%an%x00%ad", "--date=short", "--", relPath],
+      ["log", "-1", "--format=%an%x00%ad", "--date=short", "--", absPath],
       {
-        cwd: repoRoot,
+        cwd: path.dirname(absPath),
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
       },
