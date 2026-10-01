@@ -57,6 +57,15 @@ On success it prints `Saved PNG: <absolute path>` (or `Saved JPG:`).
 
 See [docs/COMMANDS.md](docs/COMMANDS.md) for details and exit codes.
 
+## Web UI
+
+```bash
+snapcode serve              # http://127.0.0.1:3333, opens your browser
+snapcode serve -p 8080 --no-open
+```
+
+Paste code or drop a file, pick a language and theme, and download the PNG. The preview updates as you type and is the same PNG the CLI would make. The server listens on 127.0.0.1 only and renders up to 256 KB, 100 lines and 300 characters per line.
+
 ## Using the renderer from code
 
 The SVG renderer has no filesystem or rasteriser dependency, so it also runs in a browser:

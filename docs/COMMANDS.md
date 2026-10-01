@@ -1,10 +1,13 @@
 # Command reference
 
-SnapCode exposes one executable, `snapcode` (`bin` in `package.json` → `src/snap.js`), with one command and no subcommands. Argument parsing is done by [commander](https://github.com/tj/commander.js) 15.
+SnapCode exposes one executable, `snapcode` (`bin` in `package.json` → `src/snap.js`): the default command renders a file, and `serve` starts the web UI. Argument parsing is done by [commander](https://github.com/tj/commander.js) 15.
 
 ```text
 snapcode [options] <filepath>
+snapcode serve [--port <n>] [--no-open]
 ```
+
+A file literally named `serve` must be passed as `./serve`.
 
 ## Arguments
 
@@ -83,6 +86,33 @@ Runs after `Saved PNG`/`Saved JPG` is printed. The image path is passed as an ar
 | Linux | `wl-copy --type image/png` (or `image/jpeg`), falling back to `xclip -selection clipboard -t <same type>` |
 
 Any failure prints `Warning: could not copy image to clipboard: <reason>` to stderr and the run still exits 0.
+
+## Web UI (`snapcode serve`)
+
+| Flag | Default | Validation |
+|---|---|---|
+| `-p, --port <n>` | `3333` | Integer from 1 to 65535. A port in use exits 1 with `Port <n> is in use. Pick another with --port.` |
+| `--no-open` | opens | Skip opening the browser (`start` on Windows, `open` on macOS, `xdg-open` on Linux) |
+
+`src/server.js` uses `node:http`, listens on `127.0.0.1` only, and runs until Ctrl+C.
+
+| Route | Does |
+|---|---|
+| `GET /` | The page (`src/index.html`, with the language and theme lists filled in at startup) |
+| `POST /render` | JSON `{ code, language, theme, fileName }` → `image/png`. `language` is `auto` (detect from `fileName`) or a Shiki id. Headers `X-Snapcode-Lines`, `X-Snapcode-Clipped` and `X-Snapcode-Language` describe what was rendered. |
+
+Limits and checks, each answered with JSON `{ "error": "<message>" }`:
+
+| Status | When |
+|---|---|
+| 400 | Body is not JSON, `code` is not a string, unknown `theme` or `language`, `fileName` longer than 255 characters |
+| 403 | `Host` header is not `127.0.0.1:<port>` or `localhost:<port>` (blocks DNS rebinding) |
+| 404, 405 | Other paths or methods |
+| 413 | Body over 256 KB |
+| 415 | `POST /render` without `Content-Type: application/json` (blocks cross-site form posts) |
+| 422 | NUL bytes, a line longer than 300 characters (render time grows fast with width), or an image over sharp's pixel limit |
+
+Code is clipped to 100 lines like the CLI default. Responses carry `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` and a CSP that allows no external loads.
 
 ## Exit codes and output
 

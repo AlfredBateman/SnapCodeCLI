@@ -22,7 +22,7 @@ Use `--clipboard none` while developing so you do not overwrite your clipboard. 
 npm test            # node --test, runs test/*.test.js
 ```
 
-`test/core.test.js` checks the pure renderer (`src/core.js`): whitespace, trailing newline, no SVG filter, XML escaping, language detection. There is no linter or CI yet (PLAN.md step 5).
+`test/core.test.js` checks the pure renderer (`src/core.js`): whitespace, trailing newline, tabs, clipping, line numbers, highlighting, no SVG filter, XML escaping, language detection. `test/server.test.js` starts the web UI server on a free port and checks the page, a render, and every rejected request. There is no linter or CI yet (PLAN.md step 5).
 
 Also check the CLI by hand:
 
@@ -36,19 +36,21 @@ node src/snap.js x.js -o x.jpg      # expect exit 1, "must end with .png for --f
 
 Look at the image, not just the exit code: spacing (e.g. `import fs from`), tab handling, wide characters, and that the footer appears with `--footer` inside a git repo.
 
+For the web UI, run `node src/snap.js serve --no-open` and open http://127.0.0.1:3333. The page is read once at startup, so restart the server after editing `src/index.html`. UI changes follow [DESIGN.md](DESIGN.md); check the empty, rendering, ready, error and clipped states at desktop and phone widths, and that everything works from the keyboard.
+
 ## Style (no config enforces it)
 
 - ES modules, `node:` prefix for built-ins.
 - 2-space indent, double quotes, semicolons, trailing commas in multi-line literals.
-- `function` declarations for helpers, `async function run()` for the CLI flow.
+- `function` declarations for helpers; each command is an `async function` passed to commander's `.action()`.
 - User-facing errors: `console.error("<message>")` then `process.exit(1)`.
-- `src/core.js` must stay free of Node built-ins, sharp and the filesystem; the web UI imports it.
+- `src/core.js` must stay free of Node built-ins, sharp and the filesystem, so it can also run in a browser.
 
 ## Common changes
 
 **Add an option.** Add `.option(...)` or `.addOption(new Option(...).choices([...]))` in the chain in `src/snap.js`. If it changes the image, pass it through to `renderSvg` in `src/core.js`. Document it in `README.md` and `docs/COMMANDS.md`.
 
-**Add a theme.** Add an entry to `THEME_PRESETS` in `src/core.js`. That is all; the CLI choices and Shiki loading follow from it.
+**Add a theme.** Add an entry to `THEME_PRESETS` in `src/core.js` (including `lineNumber` and `highlight` colours). That is all; the CLI choices, the web UI toggle and Shiki loading follow from it.
 
 **Add a language/extension.** Usually unnecessary: any Shiki language id or alias already works. Otherwise add to `EXT_LANG` or `FILENAME_LANG` in `src/core.js`.
 
