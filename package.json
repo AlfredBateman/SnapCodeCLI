@@ -29,7 +29,7 @@
   "dependencies": {
     "clipboardy": "^4.0.0",
     "commander": "^12.1.0",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.5",
     "shiki": "^1.24.4"
   },
   "repository": {
