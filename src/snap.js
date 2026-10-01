@@ -104,6 +104,7 @@ async function run() {
     .option("--footer", "Add a footer with the last git commit's author and date")
     .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
     .option("--max-lines <n>", "Render at most this many lines, 0 for all", integer(0, 1_000_000), 100)
+    .option("--line-numbers", "Show line numbers")
     .parse(process.argv);
 
   const filePath = program.args[0];
@@ -135,6 +136,7 @@ async function run() {
     theme: options.theme,
     footer: options.footer ? getGitBlameFooter(filePath) : null,
     tabWidth: options.tabWidth,
+    lineNumbers: Boolean(options.lineNumbers),
   });
 
   const outputPath = path.resolve(process.cwd(), options.output);

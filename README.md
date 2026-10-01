@@ -46,6 +46,7 @@ On success it prints `Saved PNG: <absolute path>`.
 | `--footer` | off | Add `Last edited by <author> on <date>` from the last git commit touching the file |
 | `--tab-width <n>` | `4` | Columns per tab stop, 1 to 16 |
 | `--max-lines <n>` | `100` | Render only the first `n` lines and warn on stderr; `0` renders everything |
+| `--line-numbers` | off | Show right-aligned line numbers in a gutter |
 | `-V, --version` | | Print the version |
 | `-h, --help` | | Show help |
 

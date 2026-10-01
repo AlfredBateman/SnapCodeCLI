@@ -36,6 +36,7 @@ export const THEME_PRESETS = {
     gradientEnd: "#184EAB",
     windowBg: "#1E1F29",
     titleText: "#C9D1D9",
+    lineNumber: "#6272A4",
   },
   light: {
     shikiTheme: "github-light",
@@ -43,6 +44,7 @@ export const THEME_PRESETS = {
     gradientEnd: "#C9D9FF",
     windowBg: "#FFFFFF",
     titleText: "#57606A",
+    lineNumber: "#8C959F",
   },
 };
 
@@ -77,7 +79,10 @@ export function clipLines(code, maxLines) {
 }
 
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
-export async function renderSvg(code, { fileName = "", theme = "dark", footer = null, tabWidth = 4 } = {}) {
+export async function renderSvg(
+  code,
+  { fileName = "", theme = "dark", footer = null, tabWidth = 4, lineNumbers = false } = {},
+) {
   code = code.replace(/\r?\n$/, "");
   const themeKey = theme;
   const language = detectLanguage(fileName);
@@ -106,25 +111,30 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
   // Every grapheme is anchored to its own cell, so columns line up whatever font the
   // renderer picks (librsvg ignores embedded @font-face and x lists, so neither is used).
   const defaultColor = themeKey === "dark" ? "#F8F8F2" : "#24292F";
+  const cell = (col, fill, g) =>
+    `<tspan x="${+(codeX + col * charWidth).toFixed(2)}" fill="${fill}">${escapeXml(g)}</tspan>`;
+  // Right-aligned numbers, then two blank cells before the code.
+  const gutter = lineNumbers ? String(lines.length).length + 2 : 0;
   let maxCols = 1;
   const linesSvg = lines
     .map((tokens, row) => {
       let col = 0;
       let spans = "";
+      if (gutter) {
+        const num = String(row + 1);
+        [...num].forEach((d, i) => (spans += cell(gutter - 2 - num.length + i, preset.lineNumber, d)));
+      }
       for (const token of tokens) {
         for (const { segment: g } of graphemes.segment(token.content)) {
           if (g === "\t") {
             col = (Math.floor(col / tabWidth) + 1) * tabWidth;
             continue;
           }
-          if (g !== " ") {
-            const x = +(codeX + col * charWidth).toFixed(2);
-            spans += `<tspan x="${x}" fill="${token.color || defaultColor}">${escapeXml(g)}</tspan>`;
-          }
+          if (g !== " ") spans += cell(gutter + col, token.color || defaultColor, g);
           col += WIDE.test(g) ? 2 : 1;
         }
       }
-      maxCols = Math.max(maxCols, col);
+      maxCols = Math.max(maxCols, gutter + col);
       return `<text y="${codeY + row * lineHeight + fontSize}">${spans}</text>`;
     })
     .join("\n");

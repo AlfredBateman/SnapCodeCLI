@@ -22,6 +22,7 @@ snapcode [options] <filepath>
 | `--footer` | off | none |
 | `--tab-width <n>` | `4` | Integer from 1 to 16 |
 | `--max-lines <n>` | `100` | Integer from 0 to 1000000; `0` means no limit |
+| `--line-numbers` | off | none |
 | `-V, --version` | | prints `version` from `package.json` |
 | `-h, --help` | | built in |
 
@@ -44,10 +45,10 @@ Font stack in the SVG: `JetBrains Mono, Menlo, Consolas, monospace` (not bundled
 
 ## Themes (`THEME_PRESETS` in `src/core.js`)
 
-| Key | Shiki theme | Gradient | Window bg | Title text |
-|---|---|---|---|---|
-| `dark` | `dracula` | `#3E1A70` → `#184EAB` | `#1E1F29` | `#C9D1D9` |
-| `light` | `github-light` | `#E8F1FF` → `#C9D9FF` | `#FFFFFF` | `#57606A` |
+| Key | Shiki theme | Gradient | Window bg | Title text | Line numbers |
+|---|---|---|---|---|---|
+| `dark` | `dracula` | `#3E1A70` → `#184EAB` | `#1E1F29` | `#C9D1D9` | `#6272A4` |
+| `light` | `github-light` | `#E8F1FF` → `#C9D9FF` | `#FFFFFF` | `#57606A` | `#8C959F` |
 
 ## Language detection (`detectLanguage` in `src/core.js`)
 

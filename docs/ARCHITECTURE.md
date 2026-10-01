@@ -42,7 +42,7 @@ flowchart TD
 ## How rendering works
 
 1. **Tokenise.** Shiki's `codeToTokens` shorthand lazily loads only the requested grammar and theme and returns, per line, tokens with `content` and `color`.
-2. **Place.** Each line is one `<text>` at `y = codeY + row*34 + 24`. Tokens are split into grapheme clusters (`Intl.Segmenter`), and each visible cluster is its own `<tspan x="codeX + col*14.4">` in the token's colour. `col` counts display cells: CJK, fullwidth and emoji take 2, everything else 1, and a tab jumps to the next multiple of `tabWidth` (default 4). Spaces only advance `col`. The widest line's column count sets the canvas width.
+2. **Place.** Each line is one `<text>` at `y = codeY + row*34 + 24`. Tokens are split into grapheme clusters (`Intl.Segmenter`), and each visible cluster is its own `<tspan x="codeX + col*14.4">` in the token's colour. `col` counts display cells: CJK, fullwidth and emoji take 2, everything else 1, and a tab jumps to the next multiple of `tabWidth` (default 4). Spaces only advance `col`. With `lineNumbers`, a gutter of (digits + 2) cells comes first and each number is right-aligned in it, digit by digit on the same grid. The widest line's column count sets the canvas width.
 3. **Frame.** Gradient background, a soft shadow made of eight stacked translucent rounded rects, the card, three traffic-light circles, the file name and the optional footer. There is no SVG filter (an `feDropShadow` cost about 66 s on tall images).
 4. **Rasterise.** `sharp(Buffer.from(svg)).png().toFile(...)`. Fonts come from the host system. Embedding one does not work: librsvg ignores `@font-face` (tested with a base64 TTF; the output was byte-identical).
 

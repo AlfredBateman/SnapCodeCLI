@@ -44,6 +44,14 @@ test("clips to maxLines, ignoring the final newline", () => {
   assert.deepEqual(clipLines("a\nb\nc", 0), { code: "a\nb\nc", lines: 3, clipped: false });
 });
 
+test("line numbers are right-aligned in a gutter before the code", async () => {
+  const code = Array.from({ length: 10 }, (_, i) => `x${i}`).join("\n");
+  const lines = codeLines(await renderSvg(code, { fileName: "a.txt", lineNumbers: true }));
+  const col = (x) => +((x - lines[9][0][0]) / 14.4).toFixed(3);
+  assert.deepEqual(lines[0].map(([x, g]) => [col(x), g]), [[1, "1"], [4, "x"], [5, "0"]]);
+  assert.deepEqual(lines[9].map(([x, g]) => [col(x), g]), [[0, "1"], [1, "0"], [4, "x"], [5, "9"]]);
+});
+
 test("uses no SVG filter", async () => {
   const svg = await renderSvg("x", { fileName: "a.txt", theme: "light" });
   assert.doesNotMatch(svg, /<filter/);
