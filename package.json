@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Generate beautiful syntax-highlighted code snapshots as PNG from the terminal.",
   "type": "module",
+  "exports": "./src/core.js",
   "files": [
     "src"
   ],
