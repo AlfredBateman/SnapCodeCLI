@@ -1,0 +1,32 @@
+{
+  "name": "snapcode-cli",
+  "version": "1.0.0",
+  "description": "Generate beautiful syntax-highlighted code snapshots as PNG from the terminal.",
+  "type": "module",
+  "bin": {
+    "snap": "./src/snap.js"
+  },
+  "scripts": {
+    "start": "node ./src/snap.js",
+    "snap": "node ./src/snap.js"
+  },
+  "keywords": [
+    "cli",
+    "code",
+    "snapshot",
+    "png",
+    "syntax-highlighting",
+    "shiki"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "clipboardy": "^4.0.0",
+    "commander": "^12.1.0",
+    "sharp": "^0.33.5",
+    "shiki": "^1.24.4"
+  }
+}
