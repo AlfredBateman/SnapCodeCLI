@@ -138,7 +138,7 @@ async function snap(filePath, options) {
     theme: options.theme,
     footer: options.footer ? getGitBlameFooter(filePath) : null,
     tabWidth: options.tabWidth,
-    lineNumbers: Boolean(options.lineNumbers),
+    lineNumbers: options.lineNumbers,
     highlight: options.highlight,
   });
 
