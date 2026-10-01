@@ -92,7 +92,6 @@ async function run() {
     .option("-o, --output <file>", "Output PNG file name", "snapshot.png")
     .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
     .option("--footer", "Add a footer with the last git commit's author and date")
-    .allowExcessArguments(false)
     .parse(process.argv);
 
   const filePath = program.args[0];
