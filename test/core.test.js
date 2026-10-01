@@ -90,3 +90,13 @@ test("detects languages by alias, override and file name", () => {
   assert.equal(detectLanguage("notes.unknownext"), "text");
   assert.equal(detectLanguage("a.constructor"), "text"); // not an inherited property
 });
+
+test("renders a known input to the expected card", async () => {
+  const svg = await renderSvg("let a;\n", { fileName: "a.js", theme: "light" });
+  // 760 minimum code width + 2 x 40 inner + 2 x 50 outer; one 34 px row + 44 title bar + 80 inner + 100 outer.
+  assert.match(svg, /<svg width="940" height="258" viewBox="0 0 940 258"/);
+  assert.match(svg, /<text x="134" y="77"[^>]*>a\.js<\/text>/);
+  assert.deepEqual(codeText(svg), ["leta;"]);
+  assert.match(svg, /fill="#FFFFFF"/); // light window background
+  assert.equal((await renderSvg("", { fileName: "a.txt" })).match(/<svg width="(\d+)" height="(\d+)"/).slice(1).join("x"), "940x258");
+});

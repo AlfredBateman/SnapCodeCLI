@@ -51,3 +51,26 @@ test("serves the page and renders PNGs, rejecting bad requests", async (t) => {
   );
   assert.equal(status, 403);
 });
+
+test("rejects an oversized body that declares no length", async (t) => {
+  const server = createServer().listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const { port } = server.address();
+  const req = http.request({ port, host: "127.0.0.1", method: "POST", path: "/render", headers: { "Content-Type": "application/json" } });
+  req.write('{"code":"');
+  req.write("x".repeat(MAX_BYTES)); // chunked: no Content-Length for the early check
+  req.end('"}');
+  const [res] = await once(req, "response");
+  assert.equal(res.statusCode, 413);
+  assert.match(JSON.parse(await new Promise((r) => { let b = ""; res.on("data", (d) => (b += d)).on("end", () => r(b)); })).error, /256 KB/);
+});
+
+test("rejects malformed JSON", async (t) => {
+  const server = createServer().listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const res = await fetch(`http://127.0.0.1:${server.address().port}/render`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{nope" });
+  assert.equal(res.status, 400);
+  assert.match((await res.json()).error, /must be JSON/);
+});
