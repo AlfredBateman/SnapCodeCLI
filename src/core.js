@@ -11,10 +11,6 @@ const FILENAME_LANG = {
 };
 
 const EXT_LANG = {
-  cjs: "javascript",
-  mjs: "javascript",
-  cts: "typescript",
-  mts: "typescript",
   h: "c",
   cc: "cpp",
   cxx: "cpp",
