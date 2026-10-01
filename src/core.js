@@ -116,24 +116,17 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
   const codeX = cardX + innerPadding;
   const codeY = cardY + titleBarHeight + innerPadding;
 
-  let linesSvg = "";
-  for (let row = 0; row < lines.length; row += 1) {
-    const y = codeY + row * lineHeight + fontSize;
-    let x = codeX;
-
-    for (const token of lines[row]) {
-      if (!token.content) {
-        continue;
-      }
-
-      const safeText = escapeXml(token.content);
-      const tokenWidth = token.content.length * charWidth;
-      const color = token.color || (themeKey === "dark" ? "#F8F8F2" : "#24292F");
-
-      linesSvg += `<text x="${x}" y="${y}" fill="${color}" font-size="${fontSize}" font-family="JetBrains Mono, Menlo, Consolas, monospace">${safeText}</text>`;
-      x += tokenWidth;
-    }
-  }
+  // One <text> per line; tspans flow so token spacing comes from the font, not a guess.
+  const defaultColor = themeKey === "dark" ? "#F8F8F2" : "#24292F";
+  const linesSvg = lines
+    .map((tokens, row) => {
+      const spans = tokens
+        .filter((token) => token.content)
+        .map((token) => `<tspan fill="${token.color || defaultColor}">${escapeXml(token.content)}</tspan>`)
+        .join("");
+      return `<text x="${codeX}" y="${codeY + row * lineHeight + fontSize}">${spans}</text>`;
+    })
+    .join("\n");
 
   const footerSvg = footerText
     ? `<text x="${cardX + innerPadding}" y="${cardY + cardHeight - 10}" fill="${
@@ -144,7 +137,7 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
     : "";
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${imageWidth}" height="${imageHeight}" viewBox="0 0 ${imageWidth} ${imageHeight}" xmlns="http://www.w3.org/2000/svg">
+<svg width="${imageWidth}" height="${imageHeight}" viewBox="0 0 ${imageWidth} ${imageHeight}" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${preset.gradientStart}" />
@@ -162,7 +155,9 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
   <text x="${cardX + 84}" y="${cardY + 27}" fill="${preset.titleText}" font-size="16" font-family="JetBrains Mono, Menlo, Consolas, monospace">${escapeXml(
     fileName,
   )}</text>
-  ${linesSvg}
+  <g font-size="${fontSize}" font-family="JetBrains Mono, Menlo, Consolas, monospace">
+${linesSvg}
+  </g>
   ${footerSvg}
 </svg>`;
 }
