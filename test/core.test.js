@@ -38,8 +38,10 @@ test("tabs advance to the next tab stop, 4 columns by default", async () => {
   assert.equal(await tabCol({ tabWidth: 8 }), 8);
 });
 
-test("clips to maxLines, ignoring the final newline", () => {
-  assert.deepEqual(clipLines("a\r\nb\r\nc\n", 2), { code: "a\nb", lines: 3, clipped: true });
+test("clips to maxLines, ignoring the final newline", async () => {
+  assert.deepEqual(clipLines("a\r\nb\r\nc\n", 2), { code: "a\nb\n", lines: 3, clipped: true });
+  // A blank last line is still rendered after clipping.
+  assert.equal(codeLines(await renderSvg(clipLines("a\n\nb", 2).code, { fileName: "a.txt" })).length, 2);
   assert.deepEqual(clipLines("a\nb\n", 2), { code: "a\nb\n", lines: 2, clipped: false });
   assert.deepEqual(clipLines("a\nb\nc", 0), { code: "a\nb\nc", lines: 3, clipped: false });
 });

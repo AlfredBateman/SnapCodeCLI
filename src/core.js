@@ -75,7 +75,8 @@ export function detectLanguage(fileName) {
 export function clipLines(code, maxLines) {
   const lines = code.replace(/\r?\n$/, "").split(/\r?\n/);
   const clipped = maxLines > 0 && lines.length > maxLines;
-  return { code: clipped ? lines.slice(0, maxLines).join("\n") : code, lines: lines.length, clipped };
+  // The added newline is the one renderSvg drops, so a blank last line survives.
+  return { code: clipped ? lines.slice(0, maxLines).join("\n") + "\n" : code, lines: lines.length, clipped };
 }
 
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
