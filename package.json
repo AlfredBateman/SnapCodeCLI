@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Generate beautiful syntax-highlighted code snapshots as PNG from the terminal.",
   "type": "module",
+  "files": [
+    "src"
+  ],
   "bin": {
     "snapcode": "./src/snap.js"
   },
