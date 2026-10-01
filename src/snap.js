@@ -24,7 +24,7 @@ function getGitBlameFooter(filePath) {
     const relPath = path.relative(repoRoot, absPath);
     const info = execFileSync(
       "git",
-      ["log", "-1", "--format=%an|%ad", "--date=short", "--", relPath],
+      ["log", "-1", "--format=%an%x00%ad", "--date=short", "--", relPath],
       {
         cwd: repoRoot,
         encoding: "utf8",
@@ -32,7 +32,7 @@ function getGitBlameFooter(filePath) {
       },
     )
       .trim()
-      .split("|");
+      .split("\0");
 
     if (info.length !== 2 || !info[0] || !info[1]) {
       return null;
