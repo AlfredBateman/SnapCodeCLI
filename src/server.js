@@ -6,7 +6,7 @@ import { bundledLanguages, bundledLanguagesInfo } from "shiki";
 import { clipLines, detectLanguage, renderSvg, THEME_PRESETS } from "./core.js";
 
 export const MAX_BYTES = 256 * 1024;
-export const MAX_LINES = 100;
+const MAX_LINES = 100;
 // ponytail: librsvg time grows faster than the glyph count (100 x 400 chars takes about 5 s), so long lines are
 // refused rather than clipped; raise it if rendering gets cheaper.
 export const MAX_COLUMNS = 300;
