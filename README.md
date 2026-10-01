@@ -1,6 +1,6 @@
 # SnapCode CLI
 
-Turn a source file into a syntax-highlighted PNG, styled like a code-screenshot card (macOS-style title bar, gradient background, drop shadow), straight from the terminal.
+Turn a source file into a syntax-highlighted PNG, styled like a code-screenshot card (macOS-style title bar, gradient background, soft shadow), straight from the terminal.
 
 ```text
 snapcode src/snap.js  →  snapshot.png
@@ -9,8 +9,8 @@ snapcode src/snap.js  →  snapshot.png
 ## Requirements
 
 - Node.js **22.12 or newer**.
-- Git on `PATH` is optional; it is only used for the footer.
-- Not on the npm registry. Install from source.
+- Git on `PATH` is optional; it is only used for `--footer`.
+- Not on the npm registry yet. Install from source.
 
 ## Install
 
@@ -22,45 +22,56 @@ npm link        # optional: puts `snapcode` on your PATH
 ## Quick start
 
 ```bash
-# Dark theme (default), writes ./snapshot.png and copies its path to the clipboard
+# Dark theme (default), writes ./snapshot.png
 snapcode ./index.js
 
-# Light theme, custom output, no clipboard, no git footer
-snapcode ./index.js -t light -o index.png --clipboard none --no-footer
+# Light theme, custom output, copy the image to the clipboard, add the git footer
+snapcode ./index.js -t light -o shots/index.png --clipboard image --footer
 
 # Without linking
 npm start -- ./index.js -o index.png
 node src/snap.js ./index.js
 ```
 
-On success it prints:
-
-```text
-Saved PNG: C:\path\to\snapshot.png
-Copied output path to clipboard.
-```
+On success it prints `Saved PNG: <absolute path>`.
 
 ## Options
 
 | Flag | Default | Description |
 |---|---|---|
-| `<filepath>` | required | Source file to render |
-| `-t, --theme <dark\|light>` | `dark` | `dark` = Shiki `dracula`, `light` = `github-light` (case-insensitive) |
-| `-o, --output <file>` | `snapshot.png` | Output path; must end in `.png`; relative to the current directory |
-| `--clipboard <path\|none>` | `path` | `path` copies the **output file's path** (not the image) to the clipboard |
-| `--no-footer` | footer on | Skip the `Last edited by <author> on <date>` line |
+| `<filepath>` | required | Source file to render (exactly one) |
+| `-t, --theme <dark\|light>` | `dark` | `dark` = Shiki `dracula`, `light` = `github-light` |
+| `-o, --output <file>` | `snapshot.png` | Output path; must end in `.png`; missing folders are created; an existing file is overwritten |
+| `--clipboard <image\|none>` | `none` | `image` copies the PNG itself to the clipboard. A clipboard failure only prints a warning |
+| `--footer` | off | Add `Last edited by <author> on <date>` from the last git commit touching the file |
+| `-V, --version` | | Print the version |
 | `-h, --help` | | Show help |
 
-There is no `--version` flag, config file, or environment variable. See [docs/COMMANDS.md](docs/COMMANDS.md) for details and exit codes.
+See [docs/COMMANDS.md](docs/COMMANDS.md) for details and exit codes.
+
+## Using the renderer from code
+
+The SVG renderer has no filesystem or rasteriser dependency, so it also runs in a browser:
+
+```js
+import { renderSvg } from "snapcode-cli";
+
+const svg = await renderSvg(code, { fileName: "app.ts", theme: "dark", footer: null });
+```
 
 ## Behaviour worth knowing
 
-- Language is chosen from the file extension (33 extensions mapped; anything else is rendered as plain text, including extension-less files such as `Dockerfile`).
-- Tabs are replaced with two spaces.
-- The git footer appears only if the file is inside a git repo **and** has at least one commit touching it. It shows the last *commit's* author and date, not uncommitted edits.
-- Start-up takes about 4 s even for a one-line file because every Shiki grammar is loaded.
-- Large inputs are slow: a 285-line, 160-column file produced a 2420×9948 px image and took about 70 s on the audit machine (Windows 11, Node 22).
-- Leading spaces inside a highlighted token are not rendered correctly and the character grid is hardcoded to 14 px, so spacing can look off. See [AUDIT_REPORT.md](AUDIT_REPORT.md).
+- Language comes from Shiki's own language ids and aliases (so `.lua`, `.vue`, `.ps1`, `Dockerfile`, `Makefile` all work), plus a short override map for names Shiki does not alias. Anything else renders as plain text.
+- Tabs are replaced with two spaces. A final newline does not add a blank row.
+- Only the grammar and theme the file needs are loaded: a one-line file renders in about 0.5 s.
+- The font is not bundled yet: the SVG asks for `JetBrains Mono, Menlo, Consolas, monospace` and the canvas width assumes a 14 px glyph advance, so very long lines can be cut off or padded depending on the installed font. Wide glyphs (CJK, emoji) are not measured. See [AUDIT_REPORT.md](AUDIT_REPORT.md) F-04/F-05.
+- Image size is not capped yet; very long files make very tall images.
+
+## Development
+
+```bash
+npm test        # node --test
+```
 
 ## Documentation
 
