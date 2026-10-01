@@ -52,7 +52,7 @@ Web UI
 3. **Dependencies**: upgrade sharp to ^0.35.5 (F-19), set `engines.node` to `>=22.12` (F-23), then the other majors (F-20).
 4. **Alignment**: anchor each grapheme to a cell grid, handle code points and wide glyphs (F-04, F-05). Done.
 5. **Refactor and tests**: extract `buildSvg` (F-17), add `node --test` and the CI matrix (F-18).
-6. **Behaviour changes**: footer opt-in and parsing fix, image clipboard with safe failure, `--max-lines` clip, `--tab-width`.
+6. **Behaviour changes**: footer opt-in and parsing fix, image clipboard with safe failure, `--max-lines` clip, `--tab-width`. Done.
 7. **New CLI features**: line numbers, line highlighting, JPG export.
 8. **Web UI**: `snapcode serve` with a single page, live preview, language and theme controls and PNG download, per DESIGN.md.
 9. **Publish** to npm.
