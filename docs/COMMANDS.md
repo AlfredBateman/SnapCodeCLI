@@ -31,14 +31,14 @@ None. The code reads no config file and no environment variables. Layout values 
 |---|---|
 | fontSize | 24 |
 | lineHeight | 34 |
-| charWidth (assumed glyph advance, used for canvas width only) | 14 |
+| charWidth (cell width; each glyph is placed at `col × charWidth`) | 14.4 (0.6 em) |
 | innerPadding | 40 |
 | outerPadding | 50 |
 | titleBarHeight | 44 |
 | footerHeight | 34 |
 | minCodeWidth | 760 |
 
-Font stack in the SVG: `JetBrains Mono, Menlo, Consolas, monospace` (not bundled; whichever is installed is used).
+Font stack in the SVG: `JetBrains Mono, Menlo, Consolas, monospace` (not bundled; whichever is installed is used). The font only decides glyph shape, never position: CJK, fullwidth and emoji take two cells, every other grapheme cluster one.
 
 ## Themes (`THEME_PRESETS` in `src/core.js`)
 
@@ -58,7 +58,7 @@ Checked in order, all lower-cased:
 
 ## Input handling
 
-- File is read as UTF-8. Every tab becomes two spaces. One trailing newline is dropped. CRLF input works.
+- File is read as UTF-8. Tabs advance to the next 2-column tab stop. One trailing newline is dropped. CRLF input works.
 - Control characters that XML 1.0 does not allow are removed from the rendered text.
 - Empty files render a minimum-size card.
 

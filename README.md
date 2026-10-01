@@ -62,9 +62,9 @@ const svg = await renderSvg(code, { fileName: "app.ts", theme: "dark", footer: n
 ## Behaviour worth knowing
 
 - Language comes from Shiki's own language ids and aliases (so `.lua`, `.vue`, `.ps1`, `Dockerfile`, `Makefile` all work), plus a short override map for names Shiki does not alias. Anything else renders as plain text.
-- Tabs are replaced with two spaces. A final newline does not add a blank row.
+- Tabs advance to the next 2-column tab stop. A final newline does not add a blank row.
 - Only the grammar and theme the file needs are loaded: a one-line file renders in about 0.5 s.
-- The font is not bundled yet: the SVG asks for `JetBrains Mono, Menlo, Consolas, monospace` and the canvas width assumes a 14 px glyph advance, so very long lines can be cut off or padded depending on the installed font. Wide glyphs (CJK, emoji) are not measured. See [AUDIT_REPORT.md](AUDIT_REPORT.md) F-04/F-05.
+- Columns line up on every OS: each character sits on a fixed 14.4 px grid, and CJK, fullwidth and emoji take two cells. The font is not bundled (the SVG asks for `JetBrains Mono, Menlo, Consolas, monospace`), so glyph shapes differ per OS. CJK and emoji need a system font that has them, and joined emoji such as 👨‍👩‍👧 render as separate glyphs in the PNG because librsvg does not join them.
 - Image size is not capped yet; very long files make very tall images.
 
 ## Development

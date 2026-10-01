@@ -26,10 +26,10 @@ flowchart TD
     D --> R
     H --> R
     subgraph core.js renderSvg
-      R[tabs to 2 spaces, drop final newline] --> E[detectLanguage]
+      R[drop final newline] --> E[detectLanguage]
       E --> G[shiki codeToTokens<br/>loads one grammar + one theme]
-      G --> I[layout: width = max line length x 14<br/>height = lines x 34 + chrome]
-      I --> J[SVG: one text per line, one tspan per token]
+      G --> I[layout: grapheme columns on a 14.4 px grid<br/>wide = 2 cells, tab = next stop<br/>width = widest line, height = lines x 34 + chrome]
+      I --> J[SVG: one text per line, one anchored tspan per grapheme]
     end
     J --> K[sharp SVG to PNG file]
     K --> N[print Saved PNG]
@@ -42,14 +42,14 @@ flowchart TD
 ## How rendering works
 
 1. **Tokenise.** Shiki's `codeToTokens` shorthand lazily loads only the requested grammar and theme and returns, per line, tokens with `content` and `color`.
-2. **Place.** Each line is one `<text>` at `x = codeX`, `y = codeY + row*34 + 24`; each token is a `<tspan>` inside it, so horizontal spacing comes from the font. `xml:space="preserve"` on the root keeps leading and repeated spaces.
+2. **Place.** Each line is one `<text>` at `y = codeY + row*34 + 24`. Tokens are split into grapheme clusters (`Intl.Segmenter`), and each visible cluster is its own `<tspan x="codeX + col*14.4">` in the token's colour. `col` counts display cells: CJK, fullwidth and emoji take 2, everything else 1, and a tab jumps to the next multiple of 2. Spaces only advance `col`. The widest line's column count sets the canvas width.
 3. **Frame.** Gradient background, a soft shadow made of eight stacked translucent rounded rects, the card, three traffic-light circles, the file name and the optional footer. There is no SVG filter (an `feDropShadow` cost about 66 s on tall images).
-4. **Rasterise.** `sharp(Buffer.from(svg)).png().toFile(...)`. Fonts come from the host system; nothing is embedded yet.
+4. **Rasterise.** `sharp(Buffer.from(svg)).png().toFile(...)`. Fonts come from the host system. Embedding one does not work: librsvg ignores `@font-face` (tested with a base64 TTF; the output was byte-identical).
 
 ## Key design decisions
 
 - **SVG then rasterise** rather than a canvas or headless browser: small dependency set, and the same SVG can be shown directly in the web UI.
-- **Canvas width is still a guess** (`max line length x 14 px`); glyph positions within a line are not. Bundling and measuring a font is planned (PLAN.md step 4).
+- **Glyphs on a fixed grid, not flowed text.** The installed font varies (Consolas advances 13.2 px at 24 px, Menlo and DejaVu Sans Mono 14.4), and librsvg supports neither `@font-face` nor per-character `x` lists, so every grapheme gets its own anchored `<tspan>`. Columns then match to the pixel in librsvg on every OS and in browsers; only glyph shapes differ. The cost is about 0.25 s on a 170-line file. Converting glyphs to paths from a bundled font would also make the shapes identical, but it needs a font parser in core and still needs a fallback for CJK and emoji.
 - **Language detection defers to Shiki**: its ids and aliases cover most extensions; `FILENAME_LANG` and `EXT_LANG` hold only what Shiki lacks.
 - **No shell anywhere**: `execFileSync` with argument arrays for git and clipboard commands; the Windows clipboard path goes through an environment variable.
 - **Footer and clipboard failures never fail the run**: the footer is silently dropped, the clipboard prints a warning.
