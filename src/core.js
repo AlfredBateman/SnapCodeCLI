@@ -76,18 +76,10 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
   const preset = THEME_PRESETS[themeKey];
 
   // Shorthand loads only this grammar and theme, on demand.
-  let tokenResult;
-  try {
-    tokenResult = await codeToTokens(code, {
-      lang: language,
-      theme: preset.shikiTheme,
-    });
-  } catch {
-    tokenResult = await codeToTokens(code, {
-      lang: "plaintext",
-      theme: preset.shikiTheme,
-    });
-  }
+  const tokenResult = await codeToTokens(code, {
+    lang: language,
+    theme: preset.shikiTheme,
+  });
   const lines = tokenResult.tokens || [];
 
   const fontSize = 24;

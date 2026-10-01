@@ -65,11 +65,6 @@ async function run() {
   const filePath = program.args[0];
   const options = program.opts();
 
-  if (!filePath) {
-    program.help();
-    return;
-  }
-
   if (!fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
     console.error(`File not found or not a regular file: ${filePath}`);
     process.exit(1);
