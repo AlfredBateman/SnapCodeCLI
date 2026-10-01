@@ -18,7 +18,7 @@
     "syntax-highlighting",
     "shiki"
   ],
-  "author": "",
+  "author": "AlfredBateman",
   "license": "MIT",
   "engines": {
     "node": ">=18"
@@ -28,5 +28,13 @@
     "commander": "^12.1.0",
     "sharp": "^0.33.5",
     "shiki": "^1.24.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlfredBateman/SnapCodeCLI.git"
+  },
+  "homepage": "https://github.com/AlfredBateman/SnapCodeCLI#readme",
+  "bugs": {
+    "url": "https://github.com/AlfredBateman/SnapCodeCLI/issues"
   }
 }
