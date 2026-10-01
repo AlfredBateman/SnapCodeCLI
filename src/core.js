@@ -46,6 +46,12 @@ export const THEME_PRESETS = {
   },
 };
 
+const TAB_WIDTH = 2;
+const graphemes = new Intl.Segmenter();
+// ponytail: approximates UAX #11 East Asian Wide/Fullwidth plus emoji presentation; swap for get-east-asian-width if a script misaligns.
+const WIDE =
+  /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦\u{20000}-\u{3FFFD}]|\p{Emoji_Presentation}|️/u;
+
 function escapeXml(value) {
   return value
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // not allowed in XML 1.0
@@ -66,7 +72,7 @@ export function detectLanguage(fileName) {
 
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
 export async function renderSvg(code, { fileName = "", theme = "dark", footer = null } = {}) {
-  code = code.replace(/\t/g, "  ").replace(/\r?\n$/, "");
+  code = code.replace(/\r?\n$/, "");
   const themeKey = theme;
   const language = detectLanguage(fileName);
   const preset = THEME_PRESETS[themeKey];
@@ -80,18 +86,44 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
 
   const fontSize = 24;
   const lineHeight = 34;
-  const charWidth = 14;
+  const charWidth = fontSize * 0.6; // advance of JetBrains Mono, Menlo, DejaVu Sans Mono
   const innerPadding = 40;
   const outerPadding = 50;
   const titleBarHeight = 44;
   const footerHeight = 34;
   const minCodeWidth = 760;
-  const maxChars = Math.max(
-    ...code.split(/\r?\n/).map((line) => line.length),
-    1,
-  );
+  const cardX = outerPadding;
+  const cardY = outerPadding;
+  const codeX = cardX + innerPadding;
+  const codeY = cardY + titleBarHeight + innerPadding;
 
-  const codeWidth = Math.max(minCodeWidth, Math.ceil(maxChars * charWidth));
+  // Every grapheme is anchored to its own cell, so columns line up whatever font the
+  // renderer picks (librsvg ignores embedded @font-face and x lists, so neither is used).
+  const defaultColor = themeKey === "dark" ? "#F8F8F2" : "#24292F";
+  let maxCols = 1;
+  const linesSvg = lines
+    .map((tokens, row) => {
+      let col = 0;
+      let spans = "";
+      for (const token of tokens) {
+        for (const { segment: g } of graphemes.segment(token.content)) {
+          if (g === "\t") {
+            col = (Math.floor(col / TAB_WIDTH) + 1) * TAB_WIDTH;
+            continue;
+          }
+          if (g !== " ") {
+            const x = +(codeX + col * charWidth).toFixed(2);
+            spans += `<tspan x="${x}" fill="${token.color || defaultColor}">${escapeXml(g)}</tspan>`;
+          }
+          col += WIDE.test(g) ? 2 : 1;
+        }
+      }
+      maxCols = Math.max(maxCols, col);
+      return `<text y="${codeY + row * lineHeight + fontSize}">${spans}</text>`;
+    })
+    .join("\n");
+
+  const codeWidth = Math.max(minCodeWidth, Math.ceil(maxCols * charWidth));
   const codeHeight = Math.max(lineHeight, lines.length * lineHeight);
   const cardWidth = codeWidth + innerPadding * 2;
   const footerText = footer;
@@ -99,22 +131,6 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
   const cardHeight = titleBarHeight + codeHeight + innerPadding * 2 + footerSpace;
   const imageWidth = cardWidth + outerPadding * 2;
   const imageHeight = cardHeight + outerPadding * 2;
-  const cardX = outerPadding;
-  const cardY = outerPadding;
-  const codeX = cardX + innerPadding;
-  const codeY = cardY + titleBarHeight + innerPadding;
-
-  // One <text> per line; tspans flow so token spacing comes from the font, not a guess.
-  const defaultColor = themeKey === "dark" ? "#F8F8F2" : "#24292F";
-  const linesSvg = lines
-    .map((tokens, row) => {
-      const spans = tokens
-        .filter((token) => token.content)
-        .map((token) => `<tspan fill="${token.color || defaultColor}">${escapeXml(token.content)}</tspan>`)
-        .join("");
-      return `<text x="${codeX}" y="${codeY + row * lineHeight + fontSize}">${spans}</text>`;
-    })
-    .join("\n");
 
   const footerSvg = footerText
     ? `<text x="${cardX + innerPadding}" y="${cardY + cardHeight - 10}" fill="${
