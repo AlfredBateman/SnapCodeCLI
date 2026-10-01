@@ -12,6 +12,7 @@
   },
   "scripts": {
     "start": "node ./src/snap.js",
+    "test": "node --test",
     "snap": "node ./src/snap.js"
   },
   "keywords": [
