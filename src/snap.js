@@ -2,7 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { Command, InvalidArgumentError, Option } from "commander";
 import sharp from "sharp";
 import { clipLines, parseLineRanges, renderSvg, THEME_PRESETS } from "./core.js";
@@ -93,32 +93,31 @@ function copyImageToClipboard(file, format) {
   }
 }
 
-async function run() {
-  program
-    .name("snapcode")
-    .version(pkg.version)
-    .description("Generate syntax-highlighted PNG or JPG snapshots from source code files.")
-    .argument("<filepath>", "Path to the source code file")
-    .addOption(new Option("-t, --theme <theme>", "Theme variant").choices(Object.keys(THEME_PRESETS)).default("dark"))
-    .addOption(new Option("-f, --format <format>", "Image format").choices(["png", "jpg"]).default("png"))
-    .option("-o, --output <file>", "Output file name (default: snapshot.<format>)")
-    .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
-    .option("--footer", "Add a footer with the last git commit's author and date")
-    .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
-    .option("--max-lines <n>", "Render at most this many lines, 0 for all", integer(0, 1_000_000), 100)
-    .option("--line-numbers", "Show line numbers")
-    .option("--highlight <lines>", "Highlight lines, e.g. 3,5-8", (value) => {
-      try {
-        return parseLineRanges(value);
-      } catch (error) {
-        throw new InvalidArgumentError(`${error.message}. Use numbers and ranges like 3,5-8.`);
-      }
-    })
-    .parse(process.argv);
+function openBrowser(url) {
+  const [command, args] =
+    process.platform === "win32"
+      ? ["cmd", ["/c", "start", "", url]]
+      : [process.platform === "darwin" ? "open" : "xdg-open", [url]];
+  spawn(command, args, { stdio: "ignore", detached: true, windowsHide: true })
+    .on("error", () => console.error(`Could not open a browser. Visit ${url}`))
+    .unref();
+}
 
-  const filePath = program.args[0];
-  const options = program.opts();
+async function serve({ port, open }) {
+  const { createServer } = await import("./server.js");
+  const server = createServer();
+  server.on("error", (error) => {
+    console.error(error.code === "EADDRINUSE" ? `Port ${port} is in use. Pick another with --port.` : error.message);
+    process.exit(1);
+  });
+  server.listen(port, "127.0.0.1", () => {
+    const url = `http://127.0.0.1:${port}/`;
+    console.log(`SnapCode web UI on ${url} (Ctrl+C to stop)`);
+    if (open) openBrowser(url);
+  });
+}
 
+async function snap(filePath, options) {
   if (!fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
     console.error(`File not found or not a regular file: ${filePath}`);
     process.exit(1);
@@ -168,7 +167,36 @@ async function run() {
   }
 }
 
-run().catch((error) => {
+program
+  .name("snapcode")
+  .version(pkg.version)
+  .description("Generate syntax-highlighted PNG or JPG snapshots from source code files.")
+  .argument("<filepath>", "Path to the source code file")
+  .addOption(new Option("-t, --theme <theme>", "Theme variant").choices(Object.keys(THEME_PRESETS)).default("dark"))
+  .addOption(new Option("-f, --format <format>", "Image format").choices(["png", "jpg"]).default("png"))
+  .option("-o, --output <file>", "Output file name (default: snapshot.<format>)")
+  .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
+  .option("--footer", "Add a footer with the last git commit's author and date")
+  .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
+  .option("--max-lines <n>", "Render at most this many lines, 0 for all", integer(0, 1_000_000), 100)
+  .option("--line-numbers", "Show line numbers")
+  .option("--highlight <lines>", "Highlight lines, e.g. 3,5-8", (value) => {
+    try {
+      return parseLineRanges(value);
+    } catch (error) {
+      throw new InvalidArgumentError(`${error.message}. Use numbers and ranges like 3,5-8.`);
+    }
+  })
+  .action(snap);
+
+program
+  .command("serve")
+  .description("Open the web UI, served on 127.0.0.1 only")
+  .option("-p, --port <n>", "Port to listen on", integer(1, 65535), 3333)
+  .option("--no-open", "Do not open the browser")
+  .action(serve);
+
+program.parseAsync(process.argv).catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
