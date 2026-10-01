@@ -65,6 +65,12 @@ test("parses line ranges and highlights only lines that exist", async () => {
   assert.match(rows[0][0], /y="168"/); // codeY 134 + one 34 px row
 });
 
+test("an explicit language overrides the file name", async () => {
+  const colors = async (opts) => new Set([...(await renderSvg("const x = 1;", opts)).matchAll(/fill="(#[0-9A-F]{6})">/gi)].map((m) => m[1]));
+  assert.equal((await colors({ fileName: "a.txt" })).size, 1);
+  assert.ok((await colors({ fileName: "a.txt", language: "js" })).size > 1);
+});
+
 test("uses no SVG filter", async () => {
   const svg = await renderSvg("x", { fileName: "a.txt", theme: "light" });
   assert.doesNotMatch(svg, /<filter/);

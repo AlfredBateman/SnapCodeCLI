@@ -97,11 +97,11 @@ export function parseLineRanges(spec) {
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
 export async function renderSvg(
   code,
-  { fileName = "", theme = "dark", footer = null, tabWidth = 4, lineNumbers = false, highlight = [] } = {},
+  { fileName = "", language, theme = "dark", footer = null, tabWidth = 4, lineNumbers = false, highlight = [] } = {},
 ) {
   code = code.replace(/\r?\n$/, "");
   const themeKey = theme;
-  const language = detectLanguage(fileName);
+  language ??= detectLanguage(fileName);
   const preset = THEME_PRESETS[themeKey];
 
   // Shorthand loads only this grammar and theme, on demand.

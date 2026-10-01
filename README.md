@@ -65,6 +65,7 @@ The SVG renderer has no filesystem or rasteriser dependency, so it also runs in 
 import { renderSvg } from "snapcode-cli";
 
 const svg = await renderSvg(code, { fileName: "app.ts", theme: "dark", footer: null, tabWidth: 4 });
+// Options also take language (a Shiki id; detected from fileName when omitted), lineNumbers and highlight.
 ```
 
 ## Behaviour worth knowing
