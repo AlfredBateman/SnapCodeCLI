@@ -1,4 +1,4 @@
-import { createHighlighter, bundledLanguages } from "shiki";
+import { codeToTokens } from "shiki";
 
 const EXT_TO_LANG = {
   ".js": "javascript",
@@ -75,28 +75,20 @@ export async function renderSvg(code, { fileName = "", theme = "dark", footer = 
   const language = detectLanguage(fileName);
   const preset = THEME_PRESETS[themeKey];
 
-  const highlighter = await createHighlighter({
-    themes: ["dracula", "github-light"],
-    langs: Object.keys(bundledLanguages),
-  });
-
+  // Shorthand loads only this grammar and theme, on demand.
   let tokenResult;
   try {
-    tokenResult = highlighter.codeToTokens(code, {
+    tokenResult = await codeToTokens(code, {
       lang: language,
       theme: preset.shikiTheme,
     });
   } catch {
-    tokenResult = highlighter.codeToTokens(code, {
+    tokenResult = await codeToTokens(code, {
       lang: "plaintext",
       theme: preset.shikiTheme,
     });
   }
   const lines = tokenResult.tokens || [];
-
-  if (typeof highlighter.dispose === "function") {
-    highlighter.dispose();
-  }
 
   const fontSize = 24;
   const lineHeight = 34;
