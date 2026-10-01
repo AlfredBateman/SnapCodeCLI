@@ -56,10 +56,7 @@ async function run() {
       "Clipboard mode: path or none (default: path)",
       "path",
     )
-    .option(
-      "--no-footer",
-      "Disable optional git footer even when repository metadata is available",
-    )
+    .option("--footer", "Add a footer with the last git commit's author and date")
     .parse(process.argv);
 
   const filePath = program.args[0];
