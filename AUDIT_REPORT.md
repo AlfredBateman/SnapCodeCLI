@@ -53,6 +53,22 @@ Line numbers refer to `src/snap.js` unless a file is named.
 | F-27 | UX | Low | 142, 148, 153, 159, 283 | Every failure exits 1; no distinct codes, no `--quiet`. [R] | Optional: separate codes for usage vs runtime errors. | S |
 | F-28 | Security | Info | 85-103 | **No injection issues found.** `execFileSync` with argument arrays and `--`, no shell; all text interpolated into SVG goes through `escapeXml` (66-73, 222, 232-236, 257-259). No `eval`, no secrets, no network access. [R] | none | none |
 
+## Status at 0.2.0 (2026-10-02)
+
+The tables above describe the code as audited on 2026-10-01. Checked against the code, tests and `npm audit`/`npm pack --dry-run` now:
+
+**Fixed (25 of 28):** F-01, F-02, F-03, F-04, F-05, F-06, F-07, F-08, F-09, F-10, F-11, F-12, F-14, F-15, F-16, F-17, F-18, F-19, F-20, F-21, F-22, F-23, F-24, F-25, F-28 (nothing to fix).
+
+**Remain (3):**
+
+| ID | State |
+|---|---|
+| F-13 | Accepted. An existing output file is still overwritten silently; README and docs/COMMANDS.md say so. |
+| F-26 | Partly. `--max-lines` (default 100) clips tall files, but width is not capped in the CLI, so a minified one-liner still makes a very wide image. The web UI refuses lines over 300 characters. |
+| F-27 | Out of scope per PLAN.md. Every failure still exits 1; there is no `--quiet`. |
+
+How the big ones were fixed: F-01 no SVG filter; F-02 shiki loads one grammar; F-03/F-04/F-05 every grapheme is anchored to a 14.4 px cell (glyph shapes still depend on the installed font); F-17/F-18 `renderSvg` lives in `src/core.js` with 36 `node --test` tests and a Windows/macOS/Linux CI matrix; F-19/F-20 sharp 0.35.5, shiki 4.5, commander 15, clipboardy removed, `npm audit` reports 0 vulnerabilities; F-21 `files: ["src"]` makes the tarball 7 files, 16 kB; F-24 the bin is `snapcode`.
+
 ## 3. What's working well
 
 - Core path works: dark and light themes, CRLF, empty file, unicode text, git footer in a real repo all produced valid PNGs. [V]
