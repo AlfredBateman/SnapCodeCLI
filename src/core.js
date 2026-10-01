@@ -1,39 +1,36 @@
-import { codeToTokens } from "shiki";
+import { bundledLanguages, codeToTokens } from "shiki";
 
-const EXT_TO_LANG = {
-  ".js": "javascript",
-  ".cjs": "javascript",
-  ".mjs": "javascript",
-  ".ts": "typescript",
-  ".tsx": "tsx",
-  ".jsx": "jsx",
-  ".py": "python",
-  ".java": "java",
-  ".rb": "ruby",
-  ".php": "php",
-  ".go": "go",
-  ".rs": "rust",
-  ".cpp": "cpp",
-  ".cc": "cpp",
-  ".cxx": "cpp",
-  ".c": "c",
-  ".cs": "csharp",
-  ".swift": "swift",
-  ".kt": "kotlin",
-  ".kts": "kotlin",
-  ".scala": "scala",
-  ".sh": "bash",
-  ".zsh": "bash",
-  ".json": "json",
-  ".yml": "yaml",
-  ".yaml": "yaml",
-  ".md": "markdown",
-  ".html": "html",
-  ".css": "css",
-  ".scss": "scss",
-  ".sql": "sql",
-  ".xml": "xml",
-  ".toml": "toml",
+// Only names and extensions that are not already shiki language ids or aliases.
+const FILENAME_LANG = {
+  "cmakelists.txt": "cmake",
+  gemfile: "ruby",
+  rakefile: "ruby",
+  jenkinsfile: "groovy",
+  ".bashrc": "bash",
+  ".zshrc": "bash",
+};
+
+const EXT_LANG = {
+  cjs: "javascript",
+  mjs: "javascript",
+  cts: "typescript",
+  mts: "typescript",
+  h: "c",
+  cc: "cpp",
+  cxx: "cpp",
+  hh: "cpp",
+  hpp: "cpp",
+  hxx: "cpp",
+  htm: "html",
+  svg: "xml",
+  pl: "perl",
+  pm: "perl",
+  ex: "elixir",
+  exs: "elixir",
+  ml: "ocaml",
+  mk: "make",
+  psm1: "powershell",
+  gradle: "groovy",
 };
 
 export const THEME_PRESETS = {
@@ -63,10 +60,12 @@ function escapeXml(value) {
     .replace(/'/g, "&apos;");
 }
 
-function detectLanguage(fileName) {
-  const dot = fileName.lastIndexOf(".");
-  const ext = dot === -1 ? "" : fileName.slice(dot).toLowerCase();
-  return EXT_TO_LANG[ext] || "plaintext";
+export function detectLanguage(fileName) {
+  const base = fileName.split(/[\\/]/).pop().toLowerCase();
+  const dot = base.lastIndexOf(".");
+  const ext = dot === -1 ? base : base.slice(dot + 1);
+  const lang = FILENAME_LANG[base] ?? EXT_LANG[ext] ?? ext;
+  return lang in bundledLanguages ? lang : "text";
 }
 
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
