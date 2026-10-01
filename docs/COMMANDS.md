@@ -21,6 +21,7 @@ snapcode [options] <filepath>
 | `--clipboard <mode>` | `none` | `image` or `none` (commander `choices`) |
 | `--footer` | off | none |
 | `--tab-width <n>` | `4` | Integer from 1 to 16 |
+| `--max-lines <n>` | `100` | Integer from 0 to 1000000; `0` means no limit |
 | `-V, --version` | | prints `version` from `package.json` |
 | `-h, --help` | | built in |
 
@@ -62,6 +63,7 @@ Checked in order, all lower-cased:
 - File is read as UTF-8. Tabs advance to the next multiple of `--tab-width` (default 4). One trailing newline is dropped. CRLF input works.
 - Control characters that XML 1.0 does not allow are removed from the rendered text.
 - Empty files render a minimum-size card.
+- Files longer than `--max-lines` (default 100, not counting a final newline) are cut to that many lines, and `Warning: showing the first <n> of <total> lines (change with --max-lines)` goes to stderr. The run still exits 0.
 
 ## Git footer (`--footer`)
 

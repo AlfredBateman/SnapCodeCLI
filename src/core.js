@@ -69,6 +69,13 @@ export function detectLanguage(fileName) {
   return lang in bundledLanguages ? lang : "text";
 }
 
+// Keeps the first maxLines lines (0 = all) and reports how many lines the code had.
+export function clipLines(code, maxLines) {
+  const lines = code.replace(/\r?\n$/, "").split(/\r?\n/);
+  const clipped = maxLines > 0 && lines.length > maxLines;
+  return { code: clipped ? lines.slice(0, maxLines).join("\n") : code, lines: lines.length, clipped };
+}
+
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
 export async function renderSvg(code, { fileName = "", theme = "dark", footer = null, tabWidth = 4 } = {}) {
   code = code.replace(/\r?\n$/, "");

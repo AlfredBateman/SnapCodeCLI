@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { renderSvg, detectLanguage } from "../src/core.js";
+import { renderSvg, detectLanguage, clipLines } from "../src/core.js";
 
 // Each code line as [x, glyph] pairs.
 const codeLines = (svg) =>
@@ -36,6 +36,12 @@ test("tabs advance to the next tab stop, 4 columns by default", async () => {
   assert.equal(await tabCol({}), 4);
   assert.equal(await tabCol({ tabWidth: 2 }), 2);
   assert.equal(await tabCol({ tabWidth: 8 }), 8);
+});
+
+test("clips to maxLines, ignoring the final newline", () => {
+  assert.deepEqual(clipLines("a\r\nb\r\nc\n", 2), { code: "a\nb", lines: 3, clipped: true });
+  assert.deepEqual(clipLines("a\nb\n", 2), { code: "a\nb\n", lines: 2, clipped: false });
+  assert.deepEqual(clipLines("a\nb\nc", 0), { code: "a\nb\nc", lines: 3, clipped: false });
 });
 
 test("uses no SVG filter", async () => {

@@ -5,7 +5,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { Command, InvalidArgumentError, Option } from "commander";
 import sharp from "sharp";
-import { renderSvg, THEME_PRESETS } from "./core.js";
+import { clipLines, renderSvg, THEME_PRESETS } from "./core.js";
 
 const program = new Command();
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
@@ -103,6 +103,7 @@ async function run() {
     .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
     .option("--footer", "Add a footer with the last git commit's author and date")
     .option("--tab-width <n>", "Columns per tab stop (1-16)", integer(1, 16), 4)
+    .option("--max-lines <n>", "Render at most this many lines, 0 for all", integer(0, 1_000_000), 100)
     .parse(process.argv);
 
   const filePath = program.args[0];
@@ -124,7 +125,12 @@ async function run() {
     process.exit(1);
   }
 
-  const svg = await renderSvg(code, {
+  const clip = clipLines(code, options.maxLines);
+  if (clip.clipped) {
+    console.error(`Warning: showing the first ${options.maxLines} of ${clip.lines} lines (change with --max-lines)`);
+  }
+
+  const svg = await renderSvg(clip.code, {
     fileName: path.basename(filePath),
     theme: options.theme,
     footer: options.footer ? getGitBlameFooter(filePath) : null,

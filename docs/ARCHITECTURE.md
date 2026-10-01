@@ -2,7 +2,7 @@
 
 Two ES modules, no build step:
 
-- `src/core.js`: pure renderer. Code + options in, SVG string out. Imports only `shiki`, so it also runs in a browser. It is the package entry point (`exports` in `package.json`).
+- `src/core.js`: pure renderer. Code + options in, SVG string out (plus `clipLines` for the line limit). Imports only `shiki`, so it also runs in a browser. It is the package entry point (`exports` in `package.json`).
 - `src/snap.js`: the CLI (`bin.snapcode`). Parses arguments, reads the file, gets the git footer, calls `renderSvg`, rasterises with sharp, and optionally copies the image to the clipboard.
 
 ## Dependencies and their jobs
@@ -21,7 +21,7 @@ flowchart TD
     A[argv] --> B[commander parse + choices]
     B --> C{regular file, .png output,<br/>no NUL bytes}
     C -- invalid --> X[stderr message, exit 1]
-    C -- ok --> D[read file as UTF-8]
+    C -- ok --> D[read file as UTF-8<br/>clipLines to --max-lines, warn if cut]
     B -. --footer .-> H[git rev-parse + git log -1]
     D --> R
     H --> R
