@@ -20,9 +20,10 @@ Use `--clipboard none` while developing so you do not overwrite your clipboard. 
 
 ```bash
 npm test            # node --test, runs test/*.test.js
+npm run dev         # web UI server, restarts when src/ changes
 ```
 
-`test/core.test.js` checks the pure renderer (`src/core.js`): whitespace, trailing newline, tabs, clipping, line numbers, highlighting, no SVG filter, XML escaping, language detection. `test/server.test.js` starts the web UI server on a free port and checks the page, a render, and every rejected request. There is no linter or CI yet (PLAN.md step 5).
+`test/core.test.js` checks the pure renderer (`src/core.js`): whitespace, trailing newline, tabs, clipping, line numbers, highlighting, no SVG filter, XML escaping, language detection. `test/server.test.js` starts the web UI server on a free port and checks the page, a render, and every rejected request. `test/cli.test.js` runs `src/snap.js` and checks every exit code and error message. CI (`.github/workflows/ci.yml`) runs `npm test` on Windows, macOS and Linux with Node 20 and 22. There is no linter.
 
 Also check the CLI by hand:
 
