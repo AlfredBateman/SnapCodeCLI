@@ -8,7 +8,7 @@ snapcode src/snap.js  →  snapshot.png
 
 ## Requirements
 
-- Node.js **18.17 or newer** (the `engines` field in `package.json` says `>=18`, but the `sharp` dependency needs `^18.17 || ^20.3 || >=21`).
+- Node.js **22.12 or newer**.
 - Git on `PATH` is optional; it is only used for the footer.
 - Not on the npm registry. Install from source.
 

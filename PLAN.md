@@ -11,6 +11,7 @@ Decisions from the AUDIT_REPORT.md open questions and the scoping interview (202
 | Clipboard (Q3, F-08) | Copy the **image** itself, opt-in, default `none`. A clipboard failure warns on stderr and exits 0. |
 | Large files (Q6, F-26) | Clip with a warning (default about 100 lines, `--max-lines` to override). |
 | Tab width (Q8) | New `--tab-width`, default 4. |
+| Node floor (F-23) | `engines.node >=22.12` (Node 20 is EOL; commander 15 needs 22.12). |
 | Platforms and font (Q5) | Windows, macOS and Linux. Bundle one monospace font so layout is identical everywhere. CI on all three. |
 | Alignment (Q9, F-04/F-05) | Top priority. Pixel-accurate layout from the bundled font's measured advance, code-point and wide-glyph aware. |
 | npm publish (Q7) | Planned, as the last milestone. Name `snapcode-cli` is free. |
@@ -47,7 +48,7 @@ Web UI
 
 1. **Housekeeping**: delete stray PNGs, add `.gitignore` and `files`, `--version`, rename bin to `snapcode`.
 2. **Quick wins**: remove the drop-shadow filter (F-01), load one grammar (F-02), `xml:space="preserve"` (F-03), trailing blank row (F-06), input validation (F-09), help-text fixes (F-11, F-12, F-14), delete dead code (F-16).
-3. **Dependencies**: upgrade sharp to ^0.35.5 (F-19), set `engines.node` to `>=20` (F-23), then the other majors (F-20).
+3. **Dependencies**: upgrade sharp to ^0.35.5 (F-19), set `engines.node` to `>=22.12` (F-23), then the other majors (F-20).
 4. **Alignment**: bundle the font, measure glyph width, handle code points and wide glyphs (F-04, F-05).
 5. **Refactor and tests**: extract `buildSvg` (F-17), add `node --test` and the CI matrix (F-18).
 6. **Behaviour changes**: footer opt-in and parsing fix, image clipboard with safe failure, `--max-lines` clip, `--tab-width`.

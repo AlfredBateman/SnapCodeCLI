@@ -24,7 +24,7 @@
   "author": "AlfredBateman",
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12"
   },
   "dependencies": {
     "clipboardy": "^4.0.0",
