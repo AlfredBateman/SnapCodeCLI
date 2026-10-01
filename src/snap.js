@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import sharp from "sharp";
 import { renderSvg, THEME_PRESETS } from "./core.js";
 
@@ -88,14 +88,11 @@ async function run() {
     .version(pkg.version)
     .description("Generate syntax-highlighted PNG snapshots from source code files.")
     .argument("<filepath>", "Path to the source code file")
-    .option("-t, --theme <theme>", "Theme variant: dark or light", "dark")
+    .addOption(new Option("-t, --theme <theme>", "Theme variant").choices(Object.keys(THEME_PRESETS)).default("dark"))
     .option("-o, --output <file>", "Output PNG file name", "snapshot.png")
-    .option(
-      "--clipboard <mode>",
-      "Clipboard mode: image or none",
-      "none",
-    )
+    .addOption(new Option("--clipboard <mode>", "Copy the image to the clipboard").choices(["image", "none"]).default("none"))
     .option("--footer", "Add a footer with the last git commit's author and date")
+    .allowExcessArguments(false)
     .parse(process.argv);
 
   const filePath = program.args[0];
@@ -106,20 +103,8 @@ async function run() {
     process.exit(1);
   }
 
-  const themeKey = options.theme.toLowerCase();
-  if (!THEME_PRESETS[themeKey]) {
-    console.error("Invalid theme. Use --theme dark or --theme light.");
-    process.exit(1);
-  }
-
   if (!String(options.output).toLowerCase().endsWith(".png")) {
     console.error("Output file must end with .png");
-    process.exit(1);
-  }
-
-  const clipboardMode = String(options.clipboard).toLowerCase();
-  if (!["image", "none"].includes(clipboardMode)) {
-    console.error("Invalid clipboard mode. Use --clipboard image or --clipboard none.");
     process.exit(1);
   }
 
@@ -131,7 +116,7 @@ async function run() {
 
   const svg = await renderSvg(code, {
     fileName: path.basename(filePath),
-    theme: themeKey,
+    theme: options.theme,
     footer: options.footer ? getGitBlameFooter(filePath) : null,
   });
 
@@ -141,7 +126,7 @@ async function run() {
 
   console.log(`Saved PNG: ${outputPath}`);
 
-  if (clipboardMode === "image") {
+  if (options.clipboard === "image") {
     try {
       copyImageToClipboard(outputPath);
       console.log("Copied image to clipboard.");
