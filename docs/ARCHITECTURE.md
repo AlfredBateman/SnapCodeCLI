@@ -25,7 +25,7 @@ flowchart TD
     B --> C{regular file, output extension<br/>matches --format, no NUL bytes}
     C -- invalid --> X[stderr message, exit 1]
     C -- ok --> D[read file as UTF-8<br/>clipLines to --max-lines, warn if cut]
-    B -. --footer .-> H[git rev-parse + git log -1]
+    B -. --footer .-> H[git log -1]
     D --> R
     H --> R
     subgraph core.js renderSvg

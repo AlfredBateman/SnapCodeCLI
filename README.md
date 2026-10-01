@@ -89,7 +89,10 @@ const svg = await renderSvg(code, { fileName: "app.ts", theme: "dark", footer: n
 
 ```bash
 npm test        # node --test
+npm run dev     # web UI server, restarts when src/ changes
 ```
+
+CI runs the tests on Windows, macOS and Linux with Node 22 and 24.
 
 ## Documentation
 

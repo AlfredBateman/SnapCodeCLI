@@ -73,7 +73,7 @@ Checked in order, all lower-cased:
 
 ## Git footer (`--footer`)
 
-Runs `git rev-parse --show-toplevel` in the file's directory, then `git log -1 --format=%an%x00%ad --date=short -- <relpath>`. Output is `Last edited by <author> on <YYYY-MM-DD>`. It reflects the last commit, not uncommitted edits. If git is missing, the file is outside a repo or untracked, the footer is silently omitted.
+Runs `git log -1 --format=%an%x00%ad --date=short -- <path>` in the file's directory. Output is `Last edited by <author> on <YYYY-MM-DD>`. It reflects the last commit, not uncommitted edits. If git is missing, the file is outside a repo or untracked, the footer is silently omitted.
 
 ## Clipboard (`--clipboard image`)
 
