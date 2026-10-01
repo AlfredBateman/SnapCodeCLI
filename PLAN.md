@@ -54,5 +54,5 @@ Web UI
 5. **Refactor and tests**: extract `buildSvg` (F-17), add `node --test` and the CI matrix (F-18).
 6. **Behaviour changes**: footer opt-in and parsing fix, image clipboard with safe failure, `--max-lines` clip, `--tab-width`. Done.
 7. **New CLI features**: line numbers, line highlighting, JPG export. Done.
-8. **Web UI**: `snapcode serve` with a single page, live preview, language and theme controls and PNG download, per DESIGN.md.
+8. **Web UI**: `snapcode serve` with a single page, live preview, language and theme controls and PNG download, per DESIGN.md. Done.
 9. **Publish** to npm.
