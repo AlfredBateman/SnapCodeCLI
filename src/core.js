@@ -70,7 +70,7 @@ function detectLanguage(fileName) {
 
 // Pure: code + options -> SVG string. No filesystem, no rasteriser.
 export async function renderSvg(code, { fileName = "", theme = "dark", footer = null } = {}) {
-  code = code.replace(/\t/g, "  ");
+  code = code.replace(/\t/g, "  ").replace(/\r?\n$/, "");
   const themeKey = theme;
   const language = detectLanguage(fileName);
   const preset = THEME_PRESETS[themeKey];
