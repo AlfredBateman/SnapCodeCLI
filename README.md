@@ -2,6 +2,11 @@
 
 Turn a source file into a syntax-highlighted PNG or JPG, styled like a code-screenshot card (macOS-style title bar, gradient background, soft shadow), straight from the terminal.
 
+<p align="center">
+  <img src="docs/images/hero.png" width="800" alt="A TypeScript retry helper rendered by SnapCode in the dark theme: a macOS-style title bar reading sample.ts, syntax-highlighted code on a purple-to-blue gradient, and a footer line reading Last edited by AlfredBateman on 2026-10-10">
+</p>
+<p align="center"><sub>The dark theme with <code>--footer</code>, rendered by <code>snapcode docs/examples/sample.ts</code>.</sub></p>
+
 ```text
 snapcode src/snap.js  →  snapshot.png
 ```
@@ -37,6 +42,67 @@ node src/snap.js ./index.js
 ```
 
 On success it prints `Saved PNG: <absolute path>` (or `Saved JPG:`).
+
+## Screenshots
+
+Every image here was made from [docs/examples/sample.ts](docs/examples/sample.ts).
+
+### Themes
+
+<table>
+  <tr>
+    <td><img src="docs/images/theme-dark.png" width="420" alt="The sample rendered with the dark theme (Shiki dracula) on a purple-to-blue gradient"></td>
+    <td><img src="docs/images/theme-light.png" width="420" alt="The same sample rendered with the light theme (Shiki github-light) on a pale blue gradient"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><code>-t dark</code> (default)</sub></td>
+    <td align="center"><sub><code>-t light</code></sub></td>
+  </tr>
+</table>
+
+### In the browser
+
+<img src="docs/images/web-ui.png" width="800" alt="The SnapCode web UI: a code editor with the language set to TypeScript and the Dark theme selected on the left, and on the right a Ready badge, a Download PNG button and the live preview of the rendered snapshot">
+
+*`snapcode serve`: paste code on the left, the preview on the right is the PNG the CLI would write.*
+
+### CLI
+
+```console
+$ snapcode --help
+Usage: snapcode [options] [command] <filepath>
+
+Generate syntax-highlighted PNG or JPG snapshots from source code files.
+
+Arguments:
+  filepath               Path to the source code file
+
+Options:
+  -V, --version          output the version number
+  -t, --theme <theme>    Theme variant (choices: "dark", "light", default:
+                         "dark")
+  -f, --format <format>  Image format (choices: "png", "jpg", default: "png")
+  -o, --output <file>    Output file name (default: snapshot.<format>)
+  --clipboard <mode>     Copy the image to the clipboard (choices: "image",
+                         "none", default: "none")
+  --footer               Add a footer with the last git commit's author and date
+  --tab-width <n>        Columns per tab stop (1-16) (default: 4)
+  --max-lines <n>        Render at most this many lines, 0 for all (default:
+                         100)
+  --line-numbers         Show line numbers
+  --highlight <lines>    Highlight lines, e.g. 3,5-8
+  -h, --help             display help for command
+
+Commands:
+  serve [options]        Open the web UI, served on 127.0.0.1 only
+```
+
+```console
+$ snapcode docs/examples/sample.ts -t light -o docs/images/theme-light.png
+Saved PNG: D:\Projects\SnapCodeCLI\docs\images\theme-light.png
+```
+
+*Output captured from the CLI; the path on your machine will differ.*
 
 ## Options
 
