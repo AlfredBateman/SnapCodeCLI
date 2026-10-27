@@ -15,7 +15,7 @@ snapcode src/snap.js  →  snapshot.png
 
 - Node.js **22.12 or newer**.
 - Git on `PATH` is optional; it is only used for `--footer`.
-- Not on the npm registry yet. Install from source.
+- Not on the npm registry yet, install from source.
 
 ## Install
 
